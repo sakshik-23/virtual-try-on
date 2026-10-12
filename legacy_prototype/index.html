@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Eyewear Virtual Try-On Prototype</title>
+    <!-- File on disk is style.css (not styles.css). A missing CSS path returns HTML 404 and triggers the MIME error. -->
+    <link rel="stylesheet" href="./style.css" type="text/css">
+
+    <!-- Local Three.js + MediaPipe (no CDN). app.js imports these same files. -->
+    <script type="module" src="./vendor/three.module.min.js"></script>
+    <script type="module" src="./vendor/mediapipe/vision_bundle.mjs"></script>
+</head>
+<body>
+
+    <div class="ar-container">
+        <!-- Visible status banner to tell us exactly what's happening behind the scenes -->
+        <div id="status">Initializing AI Engine... Please wait.</div>
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="3d-overlay"></canvas>
+    </div>
+
+    <!-- Module so MediaPipe can be imported from the local vision_bundle.mjs -->
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
