@@ -23,7 +23,8 @@ export class EyewearItem {
     defaultColor,
     defaultLens,
     image,
-    frontImage
+    frontImage,
+    exactImage
   }) {
     this.id = id;
     this.sku = sku;
@@ -45,7 +46,8 @@ export class EyewearItem {
     this.defaultColor = defaultColor;
     this.defaultLens = defaultLens;
     this.image = image || '/images/eyewear/wayfarer_black.jpg';
-    this.frontImage = frontImage || '/images/eyewear/exact_cutouts/exact_wayfarer_black.png';
+    this.frontImage = frontImage || '/images/eyewear/front_wayfarer.png';
+    this.exactImage = exactImage || '/images/eyewear/exact_cutouts/exact_wayfarer_black.png';
   }
 
   get discountPercent() {
@@ -94,7 +96,8 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "black",
     defaultLens: "clear",
     image: "/images/eyewear/wayfarer_black.jpg",
-    frontImage: "/images/eyewear/front_wayfarer.png"
+    frontImage: "/images/eyewear/front_wayfarer.png",
+    exactImage: "/images/eyewear/exact_cutouts/exact_wayfarer_black.png"
   }),
   new EyewearItem({
     id: "sp-round-03",
@@ -129,7 +132,8 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "rosegold",
     defaultLens: "clear",
     image: "/images/eyewear/round_rosegold.jpg",
-    frontImage: "/images/eyewear/front_round.png"
+    frontImage: "/images/eyewear/front_round.png",
+    exactImage: "/images/eyewear/exact_cutouts/exact_round_rosegold.png"
   }),
   new EyewearItem({
     id: "sp-cateye-04",
@@ -164,7 +168,8 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "black",
     defaultLens: "clear",
     image: "/images/eyewear/cateye_halfrim.jpg",
-    frontImage: "/images/eyewear/front_cateye.png"
+    frontImage: "/images/eyewear/front_cateye.png",
+    exactImage: "/images/eyewear/exact_cutouts/exact_cateye_halfrim.png"
   }),
   new EyewearItem({
     id: "sp-rectangle-06",
@@ -199,7 +204,8 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "black",
     defaultLens: "clear",
     image: "/images/eyewear/rectangle_charcoal.jpg",
-    frontImage: "/images/eyewear/front_rectangle.png"
+    frontImage: "/images/eyewear/front_rectangle.png",
+    exactImage: "/images/eyewear/exact_cutouts/exact_rectangle_charcoal.png"
   }),
   new EyewearItem({
     id: "sp-clubmaster-07",
@@ -233,7 +239,8 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "black-gold",
     defaultLens: "clear",
     image: "/images/eyewear/clubmaster_black.jpg",
-    frontImage: "/images/eyewear/front_clubmaster.png"
+    frontImage: "/images/eyewear/front_clubmaster.png",
+    exactImage: "/images/eyewear/exact_cutouts/exact_clubmaster_black.png"
   }),
   new EyewearItem({
     id: "sp-wayfarer-tortoise",
@@ -265,7 +272,8 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "tortoise",
     defaultLens: "clear",
     image: "/images/eyewear/wayfarer_tortoise.jpg",
-    frontImage: "/images/eyewear/front_wayfarer_tortoise.png"
+    frontImage: "/images/eyewear/front_wayfarer_tortoise.png",
+    exactImage: "/images/eyewear/exact_cutouts/exact_wayfarer_tortoise.png"
   }),
   new EyewearItem({
     id: "sp-round-gold",
@@ -297,7 +305,8 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "gold",
     defaultLens: "clear",
     image: "/images/eyewear/round_gold.jpg",
-    frontImage: "/images/eyewear/front_round_gold.png"
+    frontImage: "/images/eyewear/front_round_gold.png",
+    exactImage: "/images/eyewear/exact_cutouts/exact_round_gold.png"
   })
 ];
 
