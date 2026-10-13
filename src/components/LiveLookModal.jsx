@@ -252,19 +252,20 @@ export function LiveLookModal({
             overlay.style.left = `${s.x.toFixed(2)}%`;
             overlay.style.top = `${s.y.toFixed(2)}%`;
             overlay.style.width = `${s.width.toFixed(2)}%`;
-            overlay.style.transform = `translate(-50%, -50%) perspective(1200px) rotateY(${s.yaw.toFixed(2)}deg) rotateX(${(-s.pitch).toFixed(2)}deg) rotateZ(${(-s.roll).toFixed(2)}deg)`;
+            overlay.style.transform = `translate(-50%, -50%) rotateY(${s.yaw.toFixed(2)}deg) rotateX(${(-s.pitch).toFixed(2)}deg) rotateZ(${(-s.roll).toFixed(2)}deg)`;
 
             // Update 3D temple arms (behind ear strands) to follow head yaw dynamically
+            // In 3D space: left temple recedes into -Z at +84deg; right temple recedes into -Z at -84deg
             if (leftTemple) {
-              const leftYaw = -72 - (s.yaw * 0.7);
-              const leftOpacity = Math.max(0.68, Math.min(1.0, 0.88 - (s.yaw * 0.015)));
-              leftTemple.style.transform = `rotateY(${leftYaw.toFixed(2)}deg) translateZ(-4px)`;
+              const leftAngle = 84 + (s.yaw * 0.15);
+              const leftOpacity = Math.max(0.0, Math.min(1.0, 0.75 + (s.yaw / 22)));
+              leftTemple.style.transform = `rotateY(${leftAngle.toFixed(2)}deg) translateZ(-2px)`;
               leftTemple.style.opacity = leftOpacity.toFixed(2);
             }
             if (rightTemple) {
-              const rightYaw = 72 - (s.yaw * 0.7);
-              const rightOpacity = Math.max(0.68, Math.min(1.0, 0.88 + (s.yaw * 0.015)));
-              rightTemple.style.transform = `rotateY(${rightYaw.toFixed(2)}deg) translateZ(-4px)`;
+              const rightAngle = -84 + (s.yaw * 0.15);
+              const rightOpacity = Math.max(0.0, Math.min(1.0, 0.75 - (s.yaw / 22)));
+              rightTemple.style.transform = `rotateY(${rightAngle.toFixed(2)}deg) translateZ(-2px)`;
               rightTemple.style.opacity = rightOpacity.toFixed(2);
             }
 
@@ -452,10 +453,10 @@ export function LiveLookModal({
       thickness = 4.2;
     }
 
-    let hingeTopPct = 25;
-    if (shape === 'clubmaster' || shape === 'wayfarer') hingeTopPct = 23;
-    else if (shape === 'aviator') hingeTopPct = 30;
-    else if (shape === 'round') hingeTopPct = 28;
+    let hingeTopPct = 24;
+    if (shape === 'clubmaster' || shape === 'wayfarer') hingeTopPct = 21;
+    else if (shape === 'aviator') hingeTopPct = 28;
+    else if (shape === 'round') hingeTopPct = 26;
 
     return { startColor, midColor, endColor, accentColor, thickness, hingeTopPct, isMetal };
   };
@@ -521,6 +522,7 @@ export function LiveLookModal({
           onTouchStart={handlePointerDown}
           onTouchEnd={handlePointerUp}
           className="relative flex-1 w-full min-h-[420px] sm:min-h-[500px] h-[500px] bg-slate-950 flex items-center justify-center overflow-hidden select-none"
+          style={{ perspective: '1200px' }}
         >
           {tryOnMode === 'camera' ? (
             /* ================= LIVE WEBCAM AR STREAM ================= */
@@ -544,8 +546,7 @@ export function LiveLookModal({
                   top: '48%',
                   width: '38%',
                   transform: 'translate(-50%, -50%)',
-                  transformStyle: 'preserve-3d',
-                  perspective: '1200px'
+                  transformStyle: 'preserve-3d'
                 }}
               >
                 {/* Left 3D Temple Arm (Strand reaching back & hooking behind ear) */}
@@ -555,11 +556,11 @@ export function LiveLookModal({
                   style={{
                     left: '0.5%',
                     top: `${templeMeta.hingeTopPct}%`,
-                    width: '64%',
-                    height: '38px',
-                    transform: 'rotateY(-72deg) translateZ(-4px)',
+                    width: '50%',
+                    height: '36px',
+                    transform: 'rotateY(84deg) translateZ(-2px)',
                     transformOrigin: 'left center',
-                    opacity: 0.9,
+                    opacity: 0.75,
                     filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.45))'
                   }}
                 >
@@ -598,11 +599,11 @@ export function LiveLookModal({
                   style={{
                     right: '0.5%',
                     top: `${templeMeta.hingeTopPct}%`,
-                    width: '64%',
-                    height: '38px',
-                    transform: 'rotateY(72deg) translateZ(-4px)',
+                    width: '50%',
+                    height: '36px',
+                    transform: 'rotateY(-84deg) translateZ(-2px)',
                     transformOrigin: 'right center',
-                    opacity: 0.9,
+                    opacity: 0.75,
                     filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.45))'
                   }}
                 >
@@ -638,7 +639,8 @@ export function LiveLookModal({
                 <img
                   src={activeCutoutImage}
                   alt={activeProduct.name}
-                  className="w-full object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.55)] transition-all duration-150"
+                  className="w-full object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.55)] transition-all duration-150 relative z-10"
+                  style={{ transform: 'translateZ(1px)' }}
                 />
 
                 {/* Dynamic Specular Anti-Reflective Optical Coating Sheen */}
@@ -723,8 +725,7 @@ export function LiveLookModal({
                   className="absolute pointer-events-none transition-all duration-200"
                   style={{
                     ...getStaticFittingStyle(activeProduct),
-                    transformStyle: 'preserve-3d',
-                    perspective: '1200px'
+                    transformStyle: 'preserve-3d'
                   }}
                 >
                   {/* Left Temple Strand */}
@@ -733,11 +734,11 @@ export function LiveLookModal({
                     style={{
                       left: '0.5%',
                       top: `${templeMeta.hingeTopPct}%`,
-                      width: '64%',
-                      height: '38px',
-                      transform: 'rotateY(-72deg) translateZ(-4px)',
+                      width: '50%',
+                      height: '36px',
+                      transform: 'rotateY(84deg) translateZ(-2px)',
                       transformOrigin: 'left center',
-                      opacity: 0.9,
+                      opacity: 0.75,
                       filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.45))'
                     }}
                   >
@@ -760,11 +761,11 @@ export function LiveLookModal({
                     style={{
                       right: '0.5%',
                       top: `${templeMeta.hingeTopPct}%`,
-                      width: '64%',
-                      height: '38px',
-                      transform: 'rotateY(72deg) translateZ(-4px)',
+                      width: '50%',
+                      height: '36px',
+                      transform: 'rotateY(-84deg) translateZ(-2px)',
                       transformOrigin: 'right center',
-                      opacity: 0.9,
+                      opacity: 0.75,
                       filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.45))'
                     }}
                   >
@@ -785,6 +786,7 @@ export function LiveLookModal({
                     src={activeCutoutImage}
                     alt={activeProduct.name}
                     className="w-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] transition-transform duration-200 animate-in fade-in zoom-in-95 relative z-10"
+                    style={{ transform: 'translateZ(1px)' }}
                   />
                 </div>
 
