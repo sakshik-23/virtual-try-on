@@ -48,7 +48,7 @@ PRODUCTS_SEED = [
         "temple_length_mm": 140,
         "frame_width_mm": 140,
         "image": "/images/eyewear/aviator_gold.jpg",
-        "front_image": "/images/eyewear/front_round_gold.png",
+        "front_image": "/images/eyewear/front_aviator.png",
         "available_colors": [
             {"id": "gold", "name": "Champagne Gold", "hex": "#d4af37"},
             {"id": "gunmetal", "name": "Gunmetal Gray", "hex": "#4a4a4a"}
@@ -73,7 +73,7 @@ PRODUCTS_SEED = [
         "bridge_width_mm": 20,
         "temple_length_mm": 145,
         "frame_width_mm": 132,
-        "image": "/images/eyewear/round_silver.jpg",
+        "image": "/images/eyewear/round_rosegold.jpg",
         "front_image": "/images/eyewear/front_round.png",
         "available_colors": [
             {"id": "silver", "name": "Brushed Silver", "hex": "#c0c0c0"},
@@ -99,7 +99,7 @@ PRODUCTS_SEED = [
         "bridge_width_mm": 16,
         "temple_length_mm": 140,
         "frame_width_mm": 136,
-        "image": "/images/eyewear/cateye_tortoise.jpg",
+        "image": "/images/eyewear/cateye_halfrim.jpg",
         "front_image": "/images/eyewear/front_cateye.png",
         "available_colors": [
             {"id": "tortoise", "name": "Amber Tortoise", "hex": "#733618"},
@@ -125,7 +125,7 @@ PRODUCTS_SEED = [
         "bridge_width_mm": 17,
         "temple_length_mm": 145,
         "frame_width_mm": 142,
-        "image": "/images/eyewear/square_black.jpg",
+        "image": "/images/eyewear/rectangle_charcoal.jpg",
         "front_image": "/images/eyewear/front_rectangle.png",
         "available_colors": [
             {"id": "black", "name": "Glossy Jet Black", "hex": "#0a0a0a"},
@@ -177,7 +177,7 @@ PRODUCTS_SEED = [
         "bridge_width_mm": 19,
         "temple_length_mm": 142,
         "frame_width_mm": 134,
-        "image": "/images/eyewear/round_tortoise.jpg",
+        "image": "/images/eyewear/wayfarer_tortoise.jpg",
         "front_image": "/images/eyewear/front_wayfarer_tortoise.png",
         "available_colors": [
             {"id": "tortoise", "name": "Tokyo Tortoise", "hex": "#6b3e1b"},
@@ -195,15 +195,19 @@ def seed():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
-        created_count = 0
+        updated_count = 0
         for item in PRODUCTS_SEED:
             existing = db.query(Product).filter(Product.sku == item["sku"]).first()
-            if not existing:
+            if existing:
+                for k, v in item.items():
+                    setattr(existing, k, v)
+                updated_count += 1
+            else:
                 prod = Product(**item)
                 db.add(prod)
-                created_count += 1
+                updated_count += 1
         db.commit()
-        print(f"Successfully seeded {created_count} eyewear products into database!")
+        print(f"Successfully synchronized {updated_count} eyewear products in PostgreSQL!")
     except Exception as e:
         db.rollback()
         print(f"Error seeding database: {e}")

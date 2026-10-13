@@ -74,9 +74,15 @@ export function ProductDetailPage({
             ) : (
               <div className="relative w-full p-4 flex flex-col items-center justify-center">
                 <img
-                  src={product.image}
+                  src={product.image || product.frontImage || '/images/eyewear/wayfarer_black.jpg'}
                   alt={product.name}
                   className="w-full max-h-80 object-contain drop-shadow-md transition-transform hover:scale-105 duration-300"
+                  onError={(e) => {
+                    const fallback = product.frontImage || '/images/eyewear/front_wayfarer.png';
+                    if (e.currentTarget.src !== fallback) {
+                      e.currentTarget.src = fallback;
+                    }
+                  }}
                 />
               </div>
             )}
