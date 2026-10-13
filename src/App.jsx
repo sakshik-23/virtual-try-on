@@ -66,6 +66,7 @@ export default function App() {
 
   const handlePhotoCaptured = (photoUrl, metrics) => {
     setUserSelfie(photoUrl);
+    setIs3DTryOnActive(true);
     if (metrics) {
       setFaceMetrics(metrics);
       try {

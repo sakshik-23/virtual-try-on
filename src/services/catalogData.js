@@ -94,7 +94,7 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "black",
     defaultLens: "clear",
     image: "/images/eyewear/wayfarer_black.jpg",
-    frontImage: "/images/eyewear/exact_cutouts/exact_wayfarer_black.png"
+    frontImage: "/images/eyewear/front_wayfarer.png"
   }),
   new EyewearItem({
     id: "sp-round-03",
@@ -129,7 +129,7 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "rosegold",
     defaultLens: "clear",
     image: "/images/eyewear/round_rosegold.jpg",
-    frontImage: "/images/eyewear/exact_cutouts/exact_round_rosegold.png"
+    frontImage: "/images/eyewear/front_round.png"
   }),
   new EyewearItem({
     id: "sp-cateye-04",
@@ -164,7 +164,7 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "black",
     defaultLens: "clear",
     image: "/images/eyewear/cateye_halfrim.jpg",
-    frontImage: "/images/eyewear/exact_cutouts/exact_cateye_halfrim.png"
+    frontImage: "/images/eyewear/front_cateye.png"
   }),
   new EyewearItem({
     id: "sp-rectangle-06",
@@ -199,7 +199,7 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "black",
     defaultLens: "clear",
     image: "/images/eyewear/rectangle_charcoal.jpg",
-    frontImage: "/images/eyewear/exact_cutouts/exact_rectangle_charcoal.png"
+    frontImage: "/images/eyewear/front_rectangle.png"
   }),
   new EyewearItem({
     id: "sp-clubmaster-07",
@@ -233,7 +233,7 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "black-gold",
     defaultLens: "clear",
     image: "/images/eyewear/clubmaster_black.jpg",
-    frontImage: "/images/eyewear/exact_cutouts/exact_clubmaster_black.png"
+    frontImage: "/images/eyewear/front_clubmaster.png"
   }),
   new EyewearItem({
     id: "sp-wayfarer-tortoise",
@@ -265,7 +265,7 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "tortoise",
     defaultLens: "clear",
     image: "/images/eyewear/wayfarer_tortoise.jpg",
-    frontImage: "/images/eyewear/exact_cutouts/exact_wayfarer_tortoise.png"
+    frontImage: "/images/eyewear/front_wayfarer_tortoise.png"
   }),
   new EyewearItem({
     id: "sp-round-gold",
@@ -297,7 +297,7 @@ export const EYEWEAR_CATALOG = [
     defaultColor: "gold",
     defaultLens: "clear",
     image: "/images/eyewear/round_gold.jpg",
-    frontImage: "/images/eyewear/exact_cutouts/exact_round_gold.png"
+    frontImage: "/images/eyewear/front_round_gold.png"
   })
 ];
 

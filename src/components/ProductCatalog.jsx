@@ -40,32 +40,38 @@ export function ProductCatalog({
     });
   };
 
-  // Precise Face Geometry Fitting Calculation
+  // Precise Optometric Face Geometry Fitting Calculation based on Eye Distance (IPD)
   const getGlassesFittingStyle = (product) => {
-    // 1. Center coordinates
-    const posX = faceMetrics?.noseBridge?.x ? faceMetrics.noseBridge.x * 100 : 49.5;
-    // Eye/nose bridge level is naturally at 53.5% in standard webcam portraits
-    const baseY = faceMetrics?.noseBridge?.y ? faceMetrics.noseBridge.y * 100 : 53.5;
+    // 1. Center coordinates: Nose bridge (nasion between eyes)
+    const posX = faceMetrics?.noseBridge?.x != null ? faceMetrics.noseBridge.x * 100 : 50.0;
+    const baseY = faceMetrics?.noseBridge?.y != null ? faceMetrics.noseBridge.y * 100 : 51.5;
     const posY = baseY + (fitCalibration.offsetY || 0);
 
     // 2. Head tilt angle in degrees
     const tilt = faceMetrics?.tiltDeg || 0;
 
-    // 3. Proportional physical width
-    // Human face width spans ~37.5% of standard webcam selfie frame
-    const baseFaceWidth = faceMetrics?.faceSpanX ? faceMetrics.faceSpanX * 100 * 0.95 : 37.5;
+    // 3. Proportional physical width based on eye distance (IPD)
+    // Standard human IPD is ~63mm. Frame width (e.g. 138mm standard, 134mm narrow, 144mm wide)
+    // Optometric Formula: Frame Width = IPD * (frameWidth / 63mm)
+    let baseWidthPercent;
+    if (faceMetrics?.ipdRatio) {
+      const frameMm = product.dimensions?.frameWidth || 138;
+      baseWidthPercent = faceMetrics.ipdRatio * (frameMm / 63.0) * 100;
+    } else if (faceMetrics?.faceSpanRatio) {
+      const frameMm = product.dimensions?.frameWidth || 138;
+      baseWidthPercent = faceMetrics.faceSpanRatio * (frameMm / 138.0) * 100;
+    } else {
+      baseWidthPercent = 48.0;
+    }
 
-    // Scale dynamically by frame's true millimeter width (e.g., Narrow 134mm vs Wide 144mm)
-    const frameMm = product.dimensions?.frameWidth || 138;
-    const mmRatio = frameMm / 138;
-
-    const finalWidth = baseFaceWidth * mmRatio * (fitCalibration.scaleMultiplier || 1.0);
+    const finalWidth = baseWidthPercent * (fitCalibration.scaleMultiplier || 1.0);
 
     return {
       left: `${posX}%`,
       top: `${posY}%`,
       width: `${finalWidth}%`,
-      transform: `translate(-50%, -50%) rotate(${tilt}deg)`
+      transform: `translate(-50%, -50%) rotate(${tilt}deg)`,
+      transformOrigin: 'center center'
     };
   };
 

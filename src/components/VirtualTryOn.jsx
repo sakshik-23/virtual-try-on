@@ -216,59 +216,99 @@ export function VirtualTryOn({
     setIsCapturing(true);
 
     try {
+      const videoW = video.videoWidth || 1280;
+      const videoH = video.videoHeight || 720;
+      const squareSize = Math.min(videoW, videoH);
+
+      // Determine face center for perfect portrait framing
+      let faceCenterX = videoW / 2;
+      let faceCenterY = videoH / 2;
+
+      if (lastLandmarksRef.current) {
+        const lms = lastLandmarksRef.current;
+        const nose = lms[168] || lms[6];
+        if (nose) {
+          faceCenterX = (1 - nose.x) * videoW; // Mirrored coordinate
+          faceCenterY = nose.y * videoH;
+        }
+      }
+
+      // Crop box coordinates in mirrored space
+      const cropStartX = Math.max(0, Math.min(videoW - squareSize, faceCenterX - squareSize / 2));
+      const cropStartY = Math.max(0, Math.min(videoH - squareSize, faceCenterY - squareSize * 0.44));
+
+      // Draw high-resolution 1:1 square portrait
       const rawCanvas = document.createElement('canvas');
-      rawCanvas.width = video.videoWidth || 1280;
-      rawCanvas.height = video.videoHeight || 720;
+      rawCanvas.width = squareSize;
+      rawCanvas.height = squareSize;
       const rawCtx = rawCanvas.getContext('2d');
       rawCtx.save();
-      rawCtx.translate(rawCanvas.width, 0);
+      rawCtx.translate(squareSize, 0);
       rawCtx.scale(-1, 1);
-      rawCtx.drawImage(video, 0, 0, rawCanvas.width, rawCanvas.height);
+
+      // Source video X corresponding to mirrored cropStartX
+      const videoSourceX = videoW - (cropStartX + squareSize);
+      rawCtx.drawImage(
+        video,
+        videoSourceX,
+        cropStartY,
+        squareSize,
+        squareSize,
+        0,
+        0,
+        squareSize,
+        squareSize
+      );
       rawCtx.restore();
 
-      const rawPhotoUrl = rawCanvas.toDataURL('image/jpeg', 0.92);
+      const rawPhotoUrl = rawCanvas.toDataURL('image/jpeg', 0.95);
       setCapturedSelfie(rawPhotoUrl);
 
-      // Extract accurate facial geometry metrics for exact eyewear fitting
+      // Extract precise optometric facial geometry metrics inside this 1:1 square photo
       let metrics = null;
       if (lastLandmarksRef.current) {
         const lms = lastLandmarksRef.current;
-        // The canvas is flipped horizontally for mirror webcam display: x_screen = 1 - landmark.x
         const nose = lms[168] || lms[6];
-        const leftIris = lms[468] || lms[33];
-        const rightIris = lms[473] || lms[362];
-        const leftTemple = lms[234];
-        const rightTemple = lms[454];
+        const rightEye = lms[468] || lms[33]; // Physical right eye (screen-left)
+        const leftEye = lms[473] || lms[362]; // Physical left eye (screen-right)
+        const rightTemple = lms[234];
+        const leftTemple = lms[454];
 
-        const noseX = 1 - nose.x;
-        const noseY = nose.y;
+        // Map landmark to [0, 1] relative to the 1:1 square photo
+        const toSquareCoord = (lm) => {
+          const mirroredX = videoW - lm.x * videoW;
+          const mirroredY = lm.y * videoH;
+          return {
+            x: (mirroredX - cropStartX) / squareSize,
+            y: (mirroredY - cropStartY) / squareSize
+          };
+        };
 
-        const leftIrisX = 1 - leftIris.x;
-        const leftIrisY = leftIris.y;
-        const rightIrisX = 1 - rightIris.x;
-        const rightIrisY = rightIris.y;
+        const noseSq = toSquareCoord(nose);
+        const rightEyeSq = toSquareCoord(rightEye);
+        const leftEyeSq = toSquareCoord(leftEye);
+        const rightTempleSq = toSquareCoord(rightTemple);
+        const leftTempleSq = toSquareCoord(leftTemple);
 
-        const dx = rightIrisX - leftIrisX;
-        const dy = rightIrisY - leftIrisY;
-        const tiltDeg = Math.atan2(dy, dx) * (180 / Math.PI);
-
-        // Face temple-to-temple span in mirrored coordinates
-        const faceSpanX = Math.abs((1 - rightTemple.x) - (1 - leftTemple.x));
-        const pdSpan = Math.hypot(dx, dy);
+        const dx = leftEyeSq.x - rightEyeSq.x;
+        const dy = leftEyeSq.y - rightEyeSq.y;
+        const ipdRatio = Math.hypot(dx, dy); // Interpupillary eye distance as fraction of image
+        const tiltDeg = Math.atan2(dy, dx) * (180 / Math.PI); // Head tilt angle
+        const faceSpanRatio = Math.abs(leftTempleSq.x - rightTempleSq.x);
 
         metrics = {
-          noseBridge: { x: noseX, y: noseY },
-          tiltDeg,
-          faceSpanX,
-          pdSpan
+          noseBridge: { x: noseSq.x, y: noseSq.y },
+          ipdRatio,
+          faceSpanRatio,
+          tiltDeg
         };
       } else {
-        // High-precision calibrated portrait default
+        // Calibrated baseline
         metrics = {
-          noseBridge: { x: 0.495, y: 0.535 },
-          tiltDeg: 0,
-          faceSpanX: 0.38,
-          pdSpan: 0.17
+          noseBridge: { x: 0.50, y: 0.515 },
+          ipdRatio: 0.22,
+          faceSpanRatio: 0.48,
+          tiltDeg: 0
         };
       }
 

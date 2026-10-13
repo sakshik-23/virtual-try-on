@@ -18,13 +18,16 @@ export function ProductDetailModal({
   );
   const [isWishlisted, setIsWishlisted] = useState(false);
 
-  // Exact 3D Facial Measurement Fitting
-  const posX = faceMetrics?.noseBridge?.x ? faceMetrics.noseBridge.x * 100 : 49.5;
-  const posY = faceMetrics?.noseBridge?.y ? faceMetrics.noseBridge.y * 100 : 53.5;
+  // Exact 3D Facial Measurement Fitting based on Eye Distance (IPD)
+  const posX = faceMetrics?.noseBridge?.x != null ? faceMetrics.noseBridge.x * 100 : 50.0;
+  const posY = faceMetrics?.noseBridge?.y != null ? faceMetrics.noseBridge.y * 100 : 51.5;
   const tilt = faceMetrics?.tiltDeg || 0;
-  const baseFaceWidth = faceMetrics?.faceSpanX ? faceMetrics.faceSpanX * 100 * 0.95 : 37.5;
   const frameMm = product.dimensions?.frameWidth || 138;
-  const finalWidth = baseFaceWidth * (frameMm / 138);
+  const finalWidth = faceMetrics?.ipdRatio
+    ? faceMetrics.ipdRatio * (frameMm / 63.0) * 100
+    : faceMetrics?.faceSpanRatio
+    ? faceMetrics.faceSpanRatio * (frameMm / 138.0) * 100
+    : 48.0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
