@@ -303,14 +303,15 @@ function buildAuthenticShowroom3DModel(group, product, activeColor, texture, fra
   const shape = product.shape || 'wayfarer';
   const id = product.id || '';
   const isAviator = shape === 'aviator' || id.includes('aviator') || (product.name && product.name.toLowerCase().includes('aviator'));
+  const isClubmaster = id.includes('clubmaster') || (product.name && product.name.toLowerCase().includes('clubmaster'));
   const isMetal = shape === 'round' || shape === 'rectangle' || isAviator;
   const isTortoise = id.includes('tortoise');
-  const isClubmaster = id.includes('clubmaster');
   const isWayfarer = shape === 'wayfarer' && !isClubmaster && !isAviator;
 
   // Frame Color for Temples & Accents
   const frameColorHex = activeColor?.hex || (
     isAviator ? '#d4af37' :
+    isClubmaster ? '#1c1c1e' :
     shape === 'round' && id.includes('gold') ? '#d4af37' :
     shape === 'round' ? '#b76e79' :
     shape === 'rectangle' ? '#1f2937' :
@@ -322,12 +323,12 @@ function buildAuthenticShowroom3DModel(group, product, activeColor, texture, fra
   // Temple Materials
   const templeMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(frameColorHex),
-    metalness: isMetal || shape === 'cat-eye' ? 0.85 : 0.08,
-    roughness: isMetal || shape === 'cat-eye' ? 0.2 : 0.25
+    metalness: (isMetal && !isClubmaster) || shape === 'cat-eye' ? 0.85 : 0.08,
+    roughness: (isMetal && !isClubmaster) || shape === 'cat-eye' ? 0.2 : 0.25
   });
 
   // Ear hook tips: tortoiseshell/black acetate for metal wires (matching card photos!), or matching acetate
-  const earTipColor = isMetal || shape === 'cat-eye'
+  const earTipColor = (isMetal && !isClubmaster) || shape === 'cat-eye'
     ? (id.includes('gold') || id.includes('rosegold') ? '#422410' : shape === 'cat-eye' ? '#6b2148' : '#18181b')
     : frameColorHex;
 
@@ -375,14 +376,14 @@ function buildAuthenticShowroom3DModel(group, product, activeColor, texture, fra
 
   // 2. PHYSICAL 3D TEMPLE ARMS & HINGES (Connecting from outer rim to Z = -2.5)
   // Calculate exact hinge attachment coordinates based on frame silhouette
-  const hingeFractionX = isWayfarer ? 0.90 : isClubmaster ? 0.91 : 0.93;
-  const hingeFractionY = isWayfarer ? 0.16 : shape === 'cat-eye' ? 0.22 : isClubmaster ? 0.19 : 0.08;
+  const hingeFractionX = isWayfarer ? 0.90 : isClubmaster ? 0.94 : 0.93;
+  const hingeFractionY = isWayfarer ? 0.16 : shape === 'cat-eye' ? 0.22 : isClubmaster ? 0.26 : 0.08;
 
   const hingeX = (frameWidth / 2) * hingeFractionX;
   const hingeY = frameHeight * hingeFractionY;
 
-  const stemRadius = isMetal ? 0.016 : 0.024;
-  const hookRadius = isMetal ? 0.022 : 0.029;
+  const stemRadius = (isMetal && !isClubmaster) ? 0.016 : 0.024;
+  const hookRadius = (isMetal && !isClubmaster) ? 0.022 : 0.029;
 
   for (let side of [-1, 1]) {
     const x = side * hingeX;
@@ -416,7 +417,7 @@ function buildAuthenticShowroom3DModel(group, product, activeColor, texture, fra
     group.add(hookMesh);
 
     // Silicone Nose Pads (for metal/wireframe and hybrid frames only, excluding frames with photorealistic pads)
-    if ((isMetal || isClubmaster || shape === 'cat-eye') && !isAviator) {
+    if ((isMetal || shape === 'cat-eye') && !isAviator && !isClubmaster) {
       const padX = side * 0.20;
       const padY = -0.08;
       const padZ = -0.06;
