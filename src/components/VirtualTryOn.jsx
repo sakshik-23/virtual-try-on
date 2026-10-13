@@ -24,6 +24,7 @@ import { createFaceLandmarker } from '../services/faceLandmarkerService';
 import { ThreeGlassesEngine } from '../services/threeGlassesEngine';
 import { calculateFacialMetrics, classifyFaceShape, calculateHeadPose } from '../services/faceGeometry';
 import { EYEWEAR_CATALOG, FACE_SHAPES_INFO } from '../services/catalogData';
+import { tryOnSessionRepository } from '../services/productRepository';
 import confetti from 'canvas-confetti';
 
 export function VirtualTryOn({
@@ -324,6 +325,30 @@ export function VirtualTryOn({
       } catch (e) {
         console.warn('Quota error', e);
       }
+
+      // Persist Biometric Profile & 6-DoF Calibration to PostgreSQL Backend
+      tryOnSessionRepository.saveFaceProfile({
+        session_token: 'vto_sess_' + Date.now(),
+        pupillary_distance_mm: Number((metrics?.measuredPdMm || 63.5).toFixed(1)),
+        face_width_mm: Math.round(metrics?.measuredFaceWidthMm || 138),
+        detected_face_shape: classification.shape || 'Oval',
+        transformation_matrix: {
+          translation: { x: 0.0, y: 0.05, z: -1.0 },
+          rotation: { pitch: 0.0, yaw: 0.0, roll: 0.0 }
+        },
+        facial_landmarks: (lms || []).slice(0, 40).map(pt => ({
+          x: Number(pt.x.toFixed(4)),
+          y: Number(pt.y.toFixed(4)),
+          z: Number((pt.z || 0).toFixed(4))
+        })),
+        selfie_image_url: null
+      }).then(res => {
+        if (res?.backend) {
+          console.log('[Spectra API] Biometric calibration saved into PostgreSQL successfully');
+        }
+      }).catch(err => {
+        console.warn('[Spectra API] Biometric save skipped:', err);
+      });
 
       setIsAnalyzing(false);
 

@@ -8,13 +8,39 @@ import { ThreeSixtyModal } from './components/ThreeSixtyModal';
 import { StyleQuizModal } from './components/StyleQuizModal';
 import { CartDrawer } from './components/CartDrawer';
 import { EYEWEAR_CATALOG } from './services/catalogData';
+import { productRepository } from './services/productRepository';
 
 export default function App() {
   const navigate = useNavigate();
 
+  const [catalogProducts, setCatalogProducts] = useState(EYEWEAR_CATALOG);
+  const [backendLive, setBackendLive] = useState(false);
+
   const [activeProduct, setActiveProduct] = useState(EYEWEAR_CATALOG[0]);
   const [activeColor, setActiveColor] = useState(EYEWEAR_CATALOG[0].availableColors[0]);
   const [activeLens, setActiveLens] = useState(EYEWEAR_CATALOG[0].availableLensTints[0]);
+
+  // Sync products and health with live FastAPI backend on mount
+  useEffect(() => {
+    let isMounted = true;
+    async function initBackendSync() {
+      try {
+        const isHealthy = await productRepository.checkHealth();
+        if (isMounted) setBackendLive(isHealthy);
+        if (isHealthy) {
+          const liveProducts = await productRepository.getAllProducts();
+          if (isMounted && liveProducts && liveProducts.length > 0) {
+            setCatalogProducts(liveProducts);
+            setActiveProduct(prev => liveProducts.find(p => p.sku === prev.sku) || liveProducts[0]);
+          }
+        }
+      } catch (err) {
+        console.warn('Backend connection initial sync check:', err);
+      }
+    }
+    initBackendSync();
+    return () => { isMounted = false; };
+  }, []);
 
   // User 3D Selfie State
   const [userSelfie, setUserSelfie] = useState(() => {
@@ -117,6 +143,8 @@ export default function App() {
             element={
               <ProductCatalog
                 category="eyeglasses"
+                catalogProducts={catalogProducts}
+                backendLive={backendLive}
                 onSelectProduct={(p) => navigate(`/product/${p.id}`)}
                 onOpen360={handleOpen360}
                 onOpenLiveTryOn={handleOpenLiveTryOn}
@@ -134,6 +162,8 @@ export default function App() {
             element={
               <ProductCatalog
                 category="eyeglasses"
+                catalogProducts={catalogProducts}
+                backendLive={backendLive}
                 onSelectProduct={(p) => navigate(`/product/${p.id}`)}
                 onOpen360={handleOpen360}
                 onOpenLiveTryOn={handleOpenLiveTryOn}
@@ -152,6 +182,8 @@ export default function App() {
             element={
               <ProductCatalog
                 category="sunglasses"
+                catalogProducts={catalogProducts}
+                backendLive={backendLive}
                 onSelectProduct={(p) => navigate(`/product/${p.id}`)}
                 onOpen360={handleOpen360}
                 onOpenLiveTryOn={handleOpenLiveTryOn}
@@ -256,6 +288,7 @@ export default function App() {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         cartItems={cartItems}
+        faceMetrics={faceMetrics}
         onRemoveItem={(idx) => setCartItems(prev => prev.filter((_, i) => i !== idx))}
       />
     </div>

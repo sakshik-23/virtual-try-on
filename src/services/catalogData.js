@@ -2,52 +2,34 @@
 // Encapsulates physical dimensions (mm), 3D geometries, and face shape recommendations
 
 export class EyewearItem {
-  constructor({
-    id,
-    sku,
-    name,
-    brand,
-    price,
-    originalPrice,
-    rating,
-    reviewsCount,
-    shape,
-    type,
-    size,
-    dimensions,
-    recommendedFaceShapes,
-    tags,
-    description,
-    availableColors,
-    availableLensTints,
-    defaultColor,
-    defaultLens,
-    image,
-    frontImage,
-    exactImage
-  }) {
-    this.id = id;
-    this.sku = sku;
-    this.name = name;
-    this.brand = brand;
-    this.price = price;
-    this.originalPrice = originalPrice;
-    this.rating = rating;
-    this.reviewsCount = reviewsCount;
-    this.shape = shape; // 'wayfarer' | 'round' | 'cat-eye' | 'rectangle'
-    this.type = type;   // 'eyeglasses' | 'sunglasses'
-    this.size = size;   // 'Narrow' | 'Medium' | 'Wide'
-    this.dimensions = dimensions; // { lensWidth, bridgeWidth, templeLength, frameWidth } in mm
-    this.recommendedFaceShapes = recommendedFaceShapes;
-    this.tags = tags;
-    this.description = description;
-    this.availableColors = availableColors;
-    this.availableLensTints = availableLensTints;
-    this.defaultColor = defaultColor;
-    this.defaultLens = defaultLens;
-    this.image = image || '/images/eyewear/wayfarer_black.jpg';
-    this.frontImage = frontImage || '/images/eyewear/front_wayfarer.png';
-    this.exactImage = frontImage || '/images/eyewear/front_wayfarer.png';
+  constructor(data = {}) {
+    this.id = data.id;
+    this.sku = data.sku;
+    this.name = data.name;
+    this.brand = data.brand;
+    this.price = data.price;
+    this.originalPrice = data.originalPrice ?? data.original_price ?? (data.price ? data.price * 2 : 2999);
+    this.rating = data.rating ?? 4.8;
+    this.reviewsCount = data.reviewsCount ?? data.reviews_count ?? 142;
+    this.shape = data.shape; // 'wayfarer' | 'round' | 'cat-eye' | 'rectangle'
+    this.type = data.type || (data.shape === 'aviator' ? 'sunglasses' : 'eyeglasses');
+    this.size = data.size || 'Medium';
+    this.dimensions = data.dimensions || {
+      lensWidth: data.lens_width_mm || 52,
+      bridgeWidth: data.bridge_width_mm || 18,
+      templeLength: data.temple_length_mm || 142,
+      frameWidth: data.frame_width_mm || 138
+    };
+    this.recommendedFaceShapes = data.recommendedFaceShapes || data.recommended_face_shapes || ['Oval', 'Round'];
+    this.tags = data.tags || ['Best Seller'];
+    this.description = data.description || '';
+    this.availableColors = data.availableColors || data.available_colors || [];
+    this.availableLensTints = data.availableLensTints || data.available_lens_tints || [];
+    this.defaultColor = data.defaultColor || this.availableColors[0]?.id || 'black';
+    this.defaultLens = data.defaultLens || this.availableLensTints[0]?.id || 'clear';
+    this.image = data.image || '/images/eyewear/wayfarer_black.jpg';
+    this.frontImage = data.frontImage || data.front_image || '/images/eyewear/front_wayfarer.png';
+    this.exactImage = data.exactImage || this.frontImage;
   }
 
   get discountPercent() {

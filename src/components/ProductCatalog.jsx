@@ -5,6 +5,8 @@ import { EYEWEAR_CATALOG } from '../services/catalogData';
 
 export function ProductCatalog({
   category = 'eyeglasses',
+  catalogProducts = null,
+  backendLive = false,
   onSelectProduct,
   onOpen360,
   onOpenLiveTryOn,
@@ -74,7 +76,9 @@ export function ProductCatalog({
     };
   };
 
-  const filteredProducts = EYEWEAR_CATALOG.filter((p) => {
+  const productList = catalogProducts && catalogProducts.length > 0 ? catalogProducts : EYEWEAR_CATALOG;
+
+  const filteredProducts = productList.filter((p) => {
     if (category && p.type !== category) return false;
     if (selectedShape !== 'all' && p.shape !== selectedShape) return false;
     return true;
@@ -85,8 +89,19 @@ export function ProductCatalog({
       {/* Top Breadcrumb & Controls (Matching Screenshot 5) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <div className="text-[11px] text-slate-400 mb-1">
-            Eyewear / 3D Try On / <span className="text-slate-800 font-semibold capitalize">{category}</span>
+          <div className="flex items-center gap-2 text-[11px] text-slate-400 mb-1">
+            <span>Eyewear / 3D Try On / <span className="text-slate-800 font-semibold capitalize">{category}</span></span>
+            {backendLive ? (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                PostgreSQL API (Port 8000)
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                Local Mode
+              </span>
+            )}
           </div>
           <div className="flex items-baseline gap-2">
             <h1 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900 capitalize">

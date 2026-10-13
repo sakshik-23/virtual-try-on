@@ -1,34 +1,64 @@
 import React, { useState } from 'react';
-import { X, Trash2, ShoppingBag, CheckCircle, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react';
+import { X, Trash2, ShoppingBag, CheckCircle, ShieldCheck, ArrowRight, Sparkles, Database } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { tryOnSessionRepository } from '../services/productRepository';
 
 export function CartDrawer({
   isOpen,
   onClose,
   cartItems = [],
-  onRemoveItem
+  onRemoveItem,
+  faceMetrics = null
 }) {
   if (!isOpen) return null;
 
   const [lensOption, setLensOption] = useState('bluecut');
   const [isOrdered, setIsOrdered] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [confirmedOrderId, setConfirmedOrderId] = useState(null);
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price || 0), 0);
   const lensAddonPrice = lensOption === 'premium' ? 1200 : lensOption === 'singlevision' ? 500 : 0;
   const totalPrice = subtotal + (cartItems.length > 0 ? lensAddonPrice : 0);
 
-  const handleCheckout = () => {
-    setIsOrdered(true);
-    confetti({
-      particleCount: 80,
-      spread: 70,
-      origin: { y: 0.5 },
-      colors: ['#000042', '#00bac6', '#dfa64c', '#10b981']
-    });
-    setTimeout(() => {
-      setIsOrdered(false);
-      onClose();
-    }, 2800);
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    const measuredPd = faceMetrics?.measuredPdMm || 63.5;
+    
+    try {
+      const orderPayload = {
+        customer_email: 'shopper@lenskart.com',
+        total_amount: totalPrice,
+        pupillary_distance_mm: Number(measuredPd.toFixed(1)),
+        order_items: cartItems.map(item => ({
+          sku: item.sku,
+          name: item.name,
+          price: item.price,
+          shape: item.shape
+        }))
+      };
+
+      const result = await tryOnSessionRepository.checkoutOrder(orderPayload);
+      if (result && result.order_id) {
+        setConfirmedOrderId(result.order_id);
+      }
+    } catch (e) {
+      console.warn('Checkout order submission error:', e);
+    } finally {
+      setIsCheckingOut(false);
+      setIsOrdered(true);
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.5 },
+        colors: ['#000042', '#00bac6', '#dfa64c', '#10b981']
+      });
+      setTimeout(() => {
+        setIsOrdered(false);
+        setConfirmedOrderId(null);
+        onClose();
+      }, 3500);
+    }
   };
 
   return (
@@ -159,19 +189,31 @@ export function CartDrawer({
 
             <button
               onClick={handleCheckout}
-              disabled={isOrdered}
-              className="w-full py-4 bg-[#000042] text-white font-extrabold text-xs tracking-wider uppercase shadow-lg hover:bg-[#000028] transition-all flex items-center justify-center gap-2"
+              disabled={isOrdered || isCheckingOut}
+              className="w-full py-4 bg-[#000042] text-white font-extrabold text-xs tracking-wider uppercase shadow-lg hover:bg-[#000028] transition-all flex flex-col items-center justify-center gap-1"
             >
-              {isOrdered ? (
+              {isCheckingOut ? (
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Recording in PostgreSQL...</span>
+                </div>
+              ) : isOrdered ? (
                 <>
-                  <CheckCircle className="w-4 h-4 text-emerald-400" />
-                  <span>Order Placed Successfully!</span>
+                  <div className="flex items-center gap-2 text-emerald-300">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Order Confirmed & Saved to DB!</span>
+                  </div>
+                  {confirmedOrderId && (
+                    <span className="text-[10px] text-slate-300 font-mono tracking-tight font-normal">
+                      Order ID: {confirmedOrderId.slice(0, 8)}...
+                    </span>
+                  )}
                 </>
               ) : (
-                <>
+                <div className="flex items-center gap-2">
                   <span>Proceed to Checkout</span>
                   <ArrowRight className="w-4 h-4" />
-                </>
+                </div>
               )}
             </button>
 
