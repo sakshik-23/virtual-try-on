@@ -54,14 +54,11 @@ export function ProductCatalog({
     // Standard human IPD is ~63mm. Frame width (e.g. 138mm standard, 134mm narrow, 144mm wide)
     // Optometric Formula: Frame Width = IPD * (frameWidth / 63mm)
     let baseWidthPercent;
-    if (faceMetrics?.ipdRatio) {
+    if (faceMetrics?.ipdRatio && faceMetrics.ipdRatio > 0.08 && faceMetrics.ipdRatio < 0.5) {
       const frameMm = product.dimensions?.frameWidth || 138;
-      baseWidthPercent = faceMetrics.ipdRatio * (frameMm / 63.0) * 100;
-    } else if (faceMetrics?.faceSpanRatio) {
-      const frameMm = product.dimensions?.frameWidth || 138;
-      baseWidthPercent = faceMetrics.faceSpanRatio * (frameMm / 138.0) * 100;
+      baseWidthPercent = Math.min(44.0, Math.max(32.0, faceMetrics.ipdRatio * (frameMm / 63.0) * 85));
     } else {
-      baseWidthPercent = 48.0;
+      baseWidthPercent = 36.0;
     }
 
     const finalWidth = baseWidthPercent * (fitCalibration.scaleMultiplier || 1.0);
@@ -260,7 +257,7 @@ export function ProductCatalog({
                       style={getGlassesFittingStyle(product)}
                     >
                       <img
-                        src={product.frontImage || product.image}
+                        src={product.exactImage || product.frontImage || product.image}
                         alt={product.name}
                         className="w-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105"
                       />

@@ -25,11 +25,9 @@ export function ProductDetailPage({
   const posY = faceMetrics?.noseBridge?.y != null ? faceMetrics.noseBridge.y * 100 : 51.5;
   const tilt = faceMetrics?.tiltDeg || 0;
   const frameMm = product.dimensions?.frameWidth || 138;
-  const finalWidth = faceMetrics?.ipdRatio
-    ? faceMetrics.ipdRatio * (frameMm / 63.0) * 100
-    : faceMetrics?.faceSpanRatio
-    ? faceMetrics.faceSpanRatio * (frameMm / 138.0) * 100
-    : 48.0;
+  const finalWidth = faceMetrics?.ipdRatio && faceMetrics.ipdRatio > 0.08 && faceMetrics.ipdRatio < 0.5
+    ? Math.min(44.0, Math.max(32.0, faceMetrics.ipdRatio * (frameMm / 63.0) * 85))
+    : 36.0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -61,7 +59,7 @@ export function ProductDetailPage({
                   }}
                 >
                   <img
-                    src={product.frontImage || product.image}
+                    src={product.exactImage || product.frontImage || product.image}
                     alt={product.name}
                     className="w-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
                   />

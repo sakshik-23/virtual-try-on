@@ -35,8 +35,8 @@ export default function App() {
     }
   });
 
-  // 3D Try-On Active Toggle (Screenshot 5)
-  const [is3DTryOnActive, setIs3DTryOnActive] = useState(true);
+  // 3D Try-On Active Toggle (off by default so catalog shows clean product cards)
+  const [is3DTryOnActive, setIs3DTryOnActive] = useState(false);
 
   // Modals State
   const [is360ModalOpen, setIs360ModalOpen] = useState(false);
@@ -66,7 +66,6 @@ export default function App() {
 
   const handlePhotoCaptured = (photoUrl, metrics) => {
     setUserSelfie(photoUrl);
-    setIs3DTryOnActive(true);
     if (metrics) {
       setFaceMetrics(metrics);
       try {
