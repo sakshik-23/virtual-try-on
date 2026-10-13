@@ -40,3 +40,9 @@ Thumbs.db
 
 # Reference videos (user private assets)
 ref_videos/
+
+# Python & SQLite
+*.db
+__pycache__/
+*.pyc
+
