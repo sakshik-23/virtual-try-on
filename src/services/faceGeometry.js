@@ -20,6 +20,45 @@ export function getDistance2D(p1, p2, width, height) {
 }
 
 /**
+ * Calculates real-time 3D Head Pose (Yaw, Pitch, Roll) from MediaPipe 468 landmarks
+ * Essential for 180-degree sweep detection & orientation tracking
+ */
+export function calculateHeadPose(landmarks) {
+  if (!landmarks || landmarks.length < 468) return { yaw: 0, pitch: 0, roll: 0 };
+
+  const nose = landmarks[1] || landmarks[4];
+  const leftCheek = landmarks[234];
+  const rightCheek = landmarks[454];
+  const chin = landmarks[152];
+  const forehead = landmarks[10];
+
+  // Midpoint between cheeks in normalized space
+  const midX = (leftCheek.x + rightCheek.x) / 2;
+  const faceWidth = Math.abs(rightCheek.x - leftCheek.x);
+
+  // Yaw: offset of nose relative to facial midline (-45° to +45°)
+  const yawRatio = (nose.x - midX) / Math.max(faceWidth * 0.45, 0.001);
+  const yawDeg = Math.max(-50, Math.min(50, yawRatio * 45));
+
+  // Pitch: nose relative to vertical midpoint (-30° to +30°)
+  const midY = (forehead.y + chin.y) / 2;
+  const faceHeight = Math.abs(chin.y - forehead.y);
+  const pitchRatio = (nose.y - midY) / Math.max(faceHeight * 0.4, 0.001);
+  const pitchDeg = Math.max(-35, Math.min(35, pitchRatio * 35));
+
+  // Roll: head tilt between inner eye corners
+  const leftEye = landmarks[33];
+  const rightEye = landmarks[263];
+  const rollDeg = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x) * (180 / Math.PI);
+
+  return {
+    yaw: Math.round(yawDeg),
+    pitch: Math.round(pitchDeg),
+    roll: Math.round(rollDeg)
+  };
+}
+
+/**
  * Estimates Pupillary Distance (PD) in millimeters and face width in mm
  * Reference: Average human PD is ~63mm. Iris diameter is ~11.7mm.
  */
