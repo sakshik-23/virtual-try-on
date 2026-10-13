@@ -302,13 +302,15 @@ export function ThreeSixtyModal({
 function buildAuthenticShowroom3DModel(group, product, activeColor, texture, frameWidth, frameHeight) {
   const shape = product.shape || 'wayfarer';
   const id = product.id || '';
-  const isMetal = shape === 'round' || shape === 'rectangle';
+  const isAviator = shape === 'aviator' || id.includes('aviator') || (product.name && product.name.toLowerCase().includes('aviator'));
+  const isMetal = shape === 'round' || shape === 'rectangle' || isAviator;
   const isTortoise = id.includes('tortoise');
   const isClubmaster = id.includes('clubmaster');
-  const isWayfarer = shape === 'wayfarer' && !isClubmaster;
+  const isWayfarer = shape === 'wayfarer' && !isClubmaster && !isAviator;
 
   // Frame Color for Temples & Accents
   const frameColorHex = activeColor?.hex || (
+    isAviator ? '#d4af37' :
     shape === 'round' && id.includes('gold') ? '#d4af37' :
     shape === 'round' ? '#b76e79' :
     shape === 'rectangle' ? '#1f2937' :
@@ -347,27 +349,26 @@ function buildAuthenticShowroom3DModel(group, product, activeColor, texture, fra
 
   // 1. FRONT FRAME MESH (Textured with the EXACT SPECTACLES from the card!)
   // Sits cleanly in 3D with realistic rim thickness and zero cloudy lens artifacts
-  if (texture) {
-    const frontGeom = new THREE.PlaneGeometry(frameWidth, frameHeight);
-    const frontMat = new THREE.MeshStandardMaterial({
-      map: texture,
-      transparent: true,
-      alphaTest: 0.02,
-      roughness: isMetal ? 0.3 : 0.35,
-      metalness: isMetal ? 0.7 : 0.08,
-      side: THREE.DoubleSide
-    });
+  const frontGeom = new THREE.PlaneGeometry(frameWidth, frameHeight);
+  const frontMat = new THREE.MeshStandardMaterial({
+    map: texture,
+    transparent: true,
+    alphaTest: 0.08,
+    depthWrite: true,
+    roughness: isMetal ? 0.3 : 0.35,
+    metalness: isMetal ? 0.7 : 0.08,
+    side: THREE.DoubleSide
+  });
 
-    // Layer 1: Front facing frame
-    const frontMesh = new THREE.Mesh(frontGeom, frontMat);
-    frontMesh.position.set(0, 0, 0);
-    group.add(frontMesh);
+  // Layer 1: Front facing frame
+  const frontMesh = new THREE.Mesh(frontGeom, frontMat);
+  frontMesh.position.set(0, 0, 0);
+  group.add(frontMesh);
 
-    // Layer 2: Subtle depth backing at Z = -0.015 gives physical volumetric rim thickness
-    const backMesh = new THREE.Mesh(frontGeom, frontMat);
-    backMesh.position.set(0, 0, -0.015);
-    group.add(backMesh);
-  }
+  // Layer 2: Subtle depth backing at Z = -0.015 gives physical volumetric rim thickness
+  const backMesh = new THREE.Mesh(frontGeom, frontMat);
+  backMesh.position.set(0, 0, -0.015);
+  group.add(backMesh);
 
   // NOTE: We intentionally do NOT add artificial circular lens geometry meshes here!
   // The PNG texture itself has natural optical transparency, ensuring crystal-clear store showroom clarity without any foggy cataract patches!
@@ -414,8 +415,8 @@ function buildAuthenticShowroom3DModel(group, product, activeColor, texture, fra
     const hookMesh = new THREE.Mesh(hookGeom, earTipMat);
     group.add(hookMesh);
 
-    // Silicone Nose Pads (for metal/wireframe and hybrid frames only)
-    if (isMetal || isClubmaster || shape === 'cat-eye') {
+    // Silicone Nose Pads (for metal/wireframe and hybrid frames only, excluding frames with photorealistic pads)
+    if ((isMetal || isClubmaster || shape === 'cat-eye') && !isAviator) {
       const padX = side * 0.20;
       const padY = -0.08;
       const padZ = -0.06;

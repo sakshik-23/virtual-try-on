@@ -12,7 +12,8 @@ export function TryOnPage({
   onPhotoCaptured,
   userSelfie,
   onOpen360,
-  onOpenStyleQuiz
+  onOpenStyleQuiz,
+  onGoToDittoGrid
 }) {
   const navigate = useNavigate();
 
@@ -26,7 +27,7 @@ export function TryOnPage({
         onSelectColor={onSelectColor}
         onSelectLens={onSelectLens}
         onPhotoCaptured={onPhotoCaptured}
-        onGoToDittoGrid={() => navigate('/')}
+        onGoToDittoGrid={onGoToDittoGrid || (() => navigate('/'))}
         initialCapturedPhoto={userSelfie}
         onOpen360={onOpen360}
         onOpenStyleQuiz={onOpenStyleQuiz}

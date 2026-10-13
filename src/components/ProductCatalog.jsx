@@ -250,7 +250,7 @@ export function ProductCatalog({
                 {is3DTryOnActive && userSelfie ? (
                   <div
                     className="relative w-full h-full cursor-pointer bg-slate-900"
-                    onClick={() => navigate(`/product/${product.id}`)}
+                    onClick={() => onOpenLiveTryOn(product)}
                   >
                     <img
                       src={userSelfie}

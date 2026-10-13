@@ -7,6 +7,7 @@ import { TryOnPage } from './pages/TryOnPage';
 import { ThreeSixtyModal } from './components/ThreeSixtyModal';
 import { StyleQuizModal } from './components/StyleQuizModal';
 import { CartDrawer } from './components/CartDrawer';
+import { LiveLookModal } from './components/LiveLookModal';
 import { EYEWEAR_CATALOG } from './services/catalogData';
 import { productRepository } from './services/productRepository';
 
@@ -70,6 +71,7 @@ export default function App() {
   const [colorFor360, setColorFor360] = useState(EYEWEAR_CATALOG[0].availableColors[0]);
 
   const [isStyleQuizOpen, setIsStyleQuizOpen] = useState(false);
+  const [liveLookProduct, setLiveLookProduct] = useState(null);
 
   // Cart Drawer State
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -92,6 +94,7 @@ export default function App() {
 
   const handlePhotoCaptured = (photoUrl, metrics) => {
     setUserSelfie(photoUrl);
+    setIs3DTryOnActive(true);
     if (metrics) {
       setFaceMetrics(metrics);
       try {
@@ -117,7 +120,7 @@ export default function App() {
     setActiveProduct(product);
     setActiveColor(product.availableColors[0]);
     setActiveLens(product.availableLensTints[0]);
-    navigate('/try-on');
+    setLiveLookProduct(product);
   };
 
   const handleAddToCart = (product) => {
@@ -211,6 +214,10 @@ export default function App() {
                 userSelfie={userSelfie}
                 onOpen360={handleOpen360}
                 onOpenStyleQuiz={() => setIsStyleQuizOpen(true)}
+                onGoToDittoGrid={() => {
+                  setIs3DTryOnActive(true);
+                  navigate('/');
+                }}
               />
             }
           />
@@ -229,6 +236,10 @@ export default function App() {
                 userSelfie={userSelfie}
                 onOpen360={handleOpen360}
                 onOpenStyleQuiz={() => setIsStyleQuizOpen(true)}
+                onGoToDittoGrid={() => {
+                  setIs3DTryOnActive(true);
+                  navigate('/');
+                }}
               />
             }
           />
@@ -290,6 +301,18 @@ export default function App() {
         cartItems={cartItems}
         faceMetrics={faceMetrics}
         onRemoveItem={(idx) => setCartItems(prev => prev.filter((_, i) => i !== idx))}
+      />
+
+      {/* 4. Dynamic Live Look Eyewear Swiping Modal */}
+      <LiveLookModal
+        isOpen={Boolean(liveLookProduct)}
+        onClose={() => setLiveLookProduct(null)}
+        initialProduct={liveLookProduct}
+        catalogProducts={catalogProducts}
+        userSelfie={userSelfie}
+        faceMetrics={faceMetrics}
+        onAddToCart={handleAddToCart}
+        onOpen360={handleOpen360}
       />
     </div>
   );
