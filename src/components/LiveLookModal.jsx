@@ -254,17 +254,18 @@ export function LiveLookModal({
             overlay.style.width = `${s.width.toFixed(2)}%`;
             overlay.style.transform = `translate(-50%, -50%) rotateY(${s.yaw.toFixed(2)}deg) rotateX(${(-s.pitch).toFixed(2)}deg) rotateZ(${(-s.roll).toFixed(2)}deg)`;
 
-            // Update 3D temple arms (behind ear strands) to follow head yaw dynamically
-            // In 3D space: left temple recedes into -Z at +84deg; right temple recedes into -Z at -84deg
+            // Update 3D temple arms (strands reaching back to ears)
+            // Left temple extends outward to left ear (angles at -26deg receding into -Z)
+            // Right temple extends outward to right ear (angles at +26deg receding into -Z)
             if (leftTemple) {
-              const leftAngle = 84 + (s.yaw * 0.15);
-              const leftOpacity = Math.max(0.0, Math.min(1.0, 0.75 + (s.yaw / 22)));
+              const leftAngle = -26 + (s.yaw * 0.4);
+              const leftOpacity = Math.max(0.0, Math.min(1.0, 0.88 + (s.yaw / 20)));
               leftTemple.style.transform = `rotateY(${leftAngle.toFixed(2)}deg) translateZ(-2px)`;
               leftTemple.style.opacity = leftOpacity.toFixed(2);
             }
             if (rightTemple) {
-              const rightAngle = -84 + (s.yaw * 0.15);
-              const rightOpacity = Math.max(0.0, Math.min(1.0, 0.75 - (s.yaw / 22)));
+              const rightAngle = 26 + (s.yaw * 0.4);
+              const rightOpacity = Math.max(0.0, Math.min(1.0, 0.88 - (s.yaw / 20)));
               rightTemple.style.transform = `rotateY(${rightAngle.toFixed(2)}deg) translateZ(-2px)`;
               rightTemple.style.opacity = rightOpacity.toFixed(2);
             }
@@ -549,18 +550,18 @@ export function LiveLookModal({
                   transformStyle: 'preserve-3d'
                 }}
               >
-                {/* Left 3D Temple Arm (Strand reaching back & hooking behind ear) */}
+                {/* Left 3D Temple Arm (Strand reaching outward & back to left ear) */}
                 <div
                   ref={leftTempleRef}
-                  className="absolute origin-left pointer-events-none transition-all duration-100 z-0"
+                  className="absolute pointer-events-none transition-all duration-100 z-0"
                   style={{
-                    left: '0.5%',
+                    right: '98.5%',
                     top: `${templeMeta.hingeTopPct}%`,
-                    width: '50%',
+                    width: '48%',
                     height: '36px',
-                    transform: 'rotateY(84deg) translateZ(-2px)',
-                    transformOrigin: 'left center',
-                    opacity: 0.75,
+                    transform: 'rotateY(-26deg) translateZ(-2px)',
+                    transformOrigin: 'right center',
+                    opacity: 0.88,
                     filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.45))'
                   }}
                 >
@@ -571,39 +572,39 @@ export function LiveLookModal({
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <defs>
-                      <linearGradient id={`left-temple-grad-${activeProduct.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                      <linearGradient id={`left-temple-grad-${activeProduct.id}`} x1="100%" y1="0%" x2="0%" y2="0%">
                         <stop offset="0%" stopColor={templeMeta.startColor} />
                         <stop offset="45%" stopColor={templeMeta.midColor} />
                         <stop offset="100%" stopColor={templeMeta.endColor} />
                       </linearGradient>
                     </defs>
-                    {/* Metal hinge joint barrel */}
-                    <rect x="0" y="2" width="5" height={templeMeta.thickness + 2} rx="1" fill={templeMeta.accentColor} />
+                    {/* Metal hinge joint barrel touching frame edge */}
+                    <rect x="145" y="2" width="5" height={templeMeta.thickness + 2} rx="1" fill={templeMeta.accentColor} />
                     {/* Temple shaft with downward ergonomic ear hook */}
                     <path
-                      d={`M 4 ${4 + templeMeta.thickness / 2} L 100 ${4 + templeMeta.thickness / 2} Q 125 ${4 + templeMeta.thickness / 2} 136 19 Q 144 29 148 34`}
+                      d={`M 146 ${4 + templeMeta.thickness / 2} L 50 ${4 + templeMeta.thickness / 2} Q 25 ${4 + templeMeta.thickness / 2} 14 19 Q 6 29 2 34`}
                       stroke={`url(#left-temple-grad-${activeProduct.id})`}
                       strokeWidth={templeMeta.thickness}
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    {/* Padded ear tip cushion */}
-                    <circle cx="148" cy="34" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
+                    {/* Padded ear tip cushion behind ear */}
+                    <circle cx="2" cy="34" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
                   </svg>
                 </div>
 
-                {/* Right 3D Temple Arm (Strand reaching back & hooking behind ear) */}
+                {/* Right 3D Temple Arm (Strand reaching outward & back to right ear) */}
                 <div
                   ref={rightTempleRef}
-                  className="absolute origin-right pointer-events-none transition-all duration-100 z-0"
+                  className="absolute pointer-events-none transition-all duration-100 z-0"
                   style={{
-                    right: '0.5%',
+                    left: '98.5%',
                     top: `${templeMeta.hingeTopPct}%`,
-                    width: '50%',
+                    width: '48%',
                     height: '36px',
-                    transform: 'rotateY(-84deg) translateZ(-2px)',
-                    transformOrigin: 'right center',
-                    opacity: 0.75,
+                    transform: 'rotateY(26deg) translateZ(-2px)',
+                    transformOrigin: 'left center',
+                    opacity: 0.88,
                     filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.45))'
                   }}
                 >
@@ -614,24 +615,24 @@ export function LiveLookModal({
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <defs>
-                      <linearGradient id={`right-temple-grad-${activeProduct.id}`} x1="100%" y1="0%" x2="0%" y2="0%">
+                      <linearGradient id={`right-temple-grad-${activeProduct.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor={templeMeta.startColor} />
                         <stop offset="45%" stopColor={templeMeta.midColor} />
                         <stop offset="100%" stopColor={templeMeta.endColor} />
                       </linearGradient>
                     </defs>
-                    {/* Metal hinge joint barrel */}
-                    <rect x="145" y="2" width="5" height={templeMeta.thickness + 2} rx="1" fill={templeMeta.accentColor} />
+                    {/* Metal hinge joint barrel touching frame edge */}
+                    <rect x="0" y="2" width="5" height={templeMeta.thickness + 2} rx="1" fill={templeMeta.accentColor} />
                     {/* Temple shaft with downward ergonomic ear hook */}
                     <path
-                      d={`M 146 ${4 + templeMeta.thickness / 2} L 50 ${4 + templeMeta.thickness / 2} Q 25 ${4 + templeMeta.thickness / 2} 14 19 Q 6 29 2 34`}
+                      d={`M 4 ${4 + templeMeta.thickness / 2} L 100 ${4 + templeMeta.thickness / 2} Q 125 ${4 + templeMeta.thickness / 2} 136 19 Q 144 29 148 34`}
                       stroke={`url(#right-temple-grad-${activeProduct.id})`}
                       strokeWidth={templeMeta.thickness}
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    {/* Padded ear tip cushion */}
-                    <circle cx="2" cy="34" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
+                    {/* Padded ear tip cushion behind ear */}
+                    <circle cx="148" cy="34" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
                   </svg>
                 </div>
 
@@ -728,44 +729,17 @@ export function LiveLookModal({
                     transformStyle: 'preserve-3d'
                   }}
                 >
-                  {/* Left Temple Strand */}
+                  {/* Left Temple Strand (reaching outward to left ear) */}
                   <div
-                    className="absolute origin-left pointer-events-none z-0"
+                    className="absolute pointer-events-none z-0"
                     style={{
-                      left: '0.5%',
+                      right: '98.5%',
                       top: `${templeMeta.hingeTopPct}%`,
-                      width: '50%',
+                      width: '48%',
                       height: '36px',
-                      transform: 'rotateY(84deg) translateZ(-2px)',
-                      transformOrigin: 'left center',
-                      opacity: 0.75,
-                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.45))'
-                    }}
-                  >
-                    <svg viewBox="0 0 150 38" className="w-full h-full overflow-visible" fill="none">
-                      <rect x="0" y="2" width="5" height={templeMeta.thickness + 2} rx="1" fill={templeMeta.accentColor} />
-                      <path
-                        d={`M 4 ${4 + templeMeta.thickness / 2} L 100 ${4 + templeMeta.thickness / 2} Q 125 ${4 + templeMeta.thickness / 2} 136 19 Q 144 29 148 34`}
-                        stroke={templeMeta.startColor}
-                        strokeWidth={templeMeta.thickness}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <circle cx="148" cy="34" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
-                    </svg>
-                  </div>
-
-                  {/* Right Temple Strand */}
-                  <div
-                    className="absolute origin-right pointer-events-none z-0"
-                    style={{
-                      right: '0.5%',
-                      top: `${templeMeta.hingeTopPct}%`,
-                      width: '50%',
-                      height: '36px',
-                      transform: 'rotateY(-84deg) translateZ(-2px)',
+                      transform: 'rotateY(-26deg) translateZ(-2px)',
                       transformOrigin: 'right center',
-                      opacity: 0.75,
+                      opacity: 0.88,
                       filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.45))'
                     }}
                   >
@@ -779,6 +753,33 @@ export function LiveLookModal({
                         strokeLinejoin="round"
                       />
                       <circle cx="2" cy="34" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
+                    </svg>
+                  </div>
+
+                  {/* Right Temple Strand (reaching outward to right ear) */}
+                  <div
+                    className="absolute pointer-events-none z-0"
+                    style={{
+                      left: '98.5%',
+                      top: `${templeMeta.hingeTopPct}%`,
+                      width: '48%',
+                      height: '36px',
+                      transform: 'rotateY(26deg) translateZ(-2px)',
+                      transformOrigin: 'left center',
+                      opacity: 0.88,
+                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.45))'
+                    }}
+                  >
+                    <svg viewBox="0 0 150 38" className="w-full h-full overflow-visible" fill="none">
+                      <rect x="0" y="2" width="5" height={templeMeta.thickness + 2} rx="1" fill={templeMeta.accentColor} />
+                      <path
+                        d={`M 4 ${4 + templeMeta.thickness / 2} L 100 ${4 + templeMeta.thickness / 2} Q 125 ${4 + templeMeta.thickness / 2} 136 19 Q 144 29 148 34`}
+                        stroke={templeMeta.startColor}
+                        strokeWidth={templeMeta.thickness}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <circle cx="148" cy="34" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
                     </svg>
                   </div>
 
