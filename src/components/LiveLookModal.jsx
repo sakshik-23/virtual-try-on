@@ -12,7 +12,7 @@ import {
   RefreshCw,
   Check,
   Eye,
-  SlidersHorizontal
+  AlertTriangle
 } from 'lucide-react';
 import { EYEWEAR_CATALOG } from '../services/catalogData';
 import { createFaceLandmarker } from '../services/faceLandmarkerService';
@@ -81,12 +81,13 @@ export function LiveLookModal({
   const [isCameraStarting, setIsCameraStarting] = useState(false);
   const [cameraError, setCameraError] = useState(null);
   const [isFaceDetected, setIsFaceDetected] = useState(false);
+  const [isLandmarkerReady, setIsLandmarkerReady] = useState(false);
 
   // Smoothed 3D Pose parameters (Exponential Moving Average for 60 FPS zero-jitter tracking)
   const smoothedPoseRef = useRef({
     x: 50.0,
     y: 47.5,
-    width: 37.0,
+    width: 38.0,
     yaw: 0.0,
     pitch: 0.0,
     roll: 0.0
@@ -116,7 +117,6 @@ export function LiveLookModal({
     const diffX = swipeStartXRef.current - clientX;
     const diffY = (swipeStartYRef.current || clientY) - clientY;
 
-    // Detect horizontal swipe
     if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
       if (diffX > 0) handleNext(); // Swiped left -> Next specs
       else handlePrev(); // Swiped right -> Prev specs
@@ -144,53 +144,6 @@ export function LiveLookModal({
     setCurrentIndex(prev => (prev - 1 + productList.length) % productList.length);
   };
 
-  // Start Live Camera AR Stream & 60 FPS Face Landmarker
-  const startCamera = useCallback(async () => {
-    stopCamera();
-    setIsCameraStarting(true);
-    setCameraError(null);
-
-    try {
-      // 1. Initialize MediaPipe FaceLandmarker
-      if (!landmarkerRef.current) {
-        landmarkerRef.current = await createFaceLandmarker();
-      }
-
-      // 2. Request user media video stream
-      const constraints = {
-        video: {
-          facingMode: 'user',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        const playAndLoop = () => {
-          videoRef.current?.play().catch(e => console.warn('Video play warning:', e));
-          startDetectionLoop();
-        };
-
-        if (videoRef.current.readyState >= 2) {
-          playAndLoop();
-        } else {
-          videoRef.current.onloadedmetadata = playAndLoop;
-          videoRef.current.onloadeddata = playAndLoop;
-        }
-      }
-      setIsCameraStarting(false);
-    } catch (err) {
-      console.error('Camera initialization failed:', err);
-      setIsCameraStarting(false);
-      setCameraError('Camera access unavailable. Please grant camera permission to try spectacles live.');
-    }
-  }, []);
-
   // Stop camera tracks and cancel RAF loop
   const stopCamera = useCallback(() => {
     if (animFrameIdRef.current) {
@@ -198,7 +151,9 @@ export function LiveLookModal({
       animFrameIdRef.current = null;
     }
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach(track => {
+        try { track.stop(); } catch (e) {}
+      });
       streamRef.current = null;
     }
     if (videoRef.current) {
@@ -211,7 +166,7 @@ export function LiveLookModal({
   const startDetectionLoop = useCallback(() => {
     if (animFrameIdRef.current) cancelAnimationFrame(animFrameIdRef.current);
 
-    const loop = (now) => {
+    const loop = () => {
       animFrameIdRef.current = requestAnimationFrame(loop);
 
       const video = videoRef.current;
@@ -221,106 +176,182 @@ export function LiveLookModal({
       const rightTemple = rightTempleRef.current;
       const landmarker = landmarkerRef.current;
 
-      if (!video || !container || !overlay || video.readyState < 2 || !landmarker) return;
+      if (!video || !container || !overlay || video.readyState < 2) return;
 
-      // Ensure timestamp strictly increases
+      // Ensure timestamp strictly increases for MediaPipe
       const ts = performance.now();
       if (ts <= lastTimestampRef.current) return;
       lastTimestampRef.current = ts;
 
-      try {
-        const results = landmarker.detectForVideo(video, ts);
+      if (landmarker) {
+        try {
+          const results = landmarker.detectForVideo(video, ts);
 
-        if (results && results.faceLandmarks && results.faceLandmarks.length > 0) {
-          const landmarks = results.faceLandmarks[0];
+          if (results && results.faceLandmarks && results.faceLandmarks.length > 0) {
+            const landmarks = results.faceLandmarks[0];
 
-          const videoW = video.videoWidth || 1280;
-          const videoH = video.videoHeight || 720;
-          const containerW = container.clientWidth || 640;
-          const containerH = container.clientHeight || 480;
+            const videoW = video.videoWidth || 1280;
+            const videoH = video.videoHeight || 720;
+            const containerW = container.clientWidth || 640;
+            const containerH = container.clientHeight || 480;
 
-          // Compute exact object-cover displayed coordinates
-          const scale = Math.max(containerW / videoW, containerH / videoH);
-          const displayedW = videoW * scale;
-          const displayedH = videoH * scale;
-          const offsetX = (containerW - displayedW) / 2;
-          const offsetY = (containerH - displayedH) / 2;
+            // Compute exact object-cover displayed coordinates
+            const scale = Math.max(containerW / videoW, containerH / videoH);
+            const displayedW = videoW * scale;
+            const displayedH = videoH * scale;
+            const offsetX = (containerW - displayedW) / 2;
+            const offsetY = (containerH - displayedH) / 2;
 
-          // Upper nasal bridge landmark (168 is Nasion between eyes; 6 is nasal root)
-          const noseBridge = landmarks[168] || landmarks[6] || landmarks[1];
+            // Upper nasal bridge landmark (168 is Nasion between eyes; 6 is nasal root)
+            const noseBridge = landmarks[168] || landmarks[6] || landmarks[1];
 
-          // Mirror video horizontally (scaleX(-1)): flip normalized x
-          const videoPixelX = (1 - noseBridge.x) * videoW;
-          const videoPixelY = noseBridge.y * videoH;
+            // Mirror video horizontally (scaleX(-1)): flip normalized x
+            const videoPixelX = (1 - noseBridge.x) * videoW;
+            const videoPixelY = noseBridge.y * videoH;
 
-          const containerPixelX = offsetX + videoPixelX * scale;
-          const containerPixelY = offsetY + videoPixelY * scale;
+            const containerPixelX = offsetX + videoPixelX * scale;
+            const containerPixelY = offsetY + videoPixelY * scale;
 
-          const targetX = (containerPixelX / containerW) * 100;
+            const targetX = (containerPixelX / containerW) * 100;
 
-          // Slight anatomical vertical offset according to frame geometry
-          const currentProd = activeProductRef.current;
-          const shape = currentProd?.shape || 'wayfarer';
-          const yOffsetPct = shape === 'aviator' ? 1.6 : shape === 'round' ? 0.8 : 1.1;
-          const targetY = (containerPixelY / containerH) * 100 + yOffsetPct;
+            // Slight anatomical vertical offset according to frame geometry
+            const currentProd = activeProductRef.current;
+            const shape = currentProd?.shape || 'wayfarer';
+            const yOffsetPct = shape === 'aviator' ? 1.6 : shape === 'round' ? 0.8 : 1.1;
+            const targetY = (containerPixelY / containerH) * 100 + yOffsetPct;
 
-          // Compute Pupillary Distance (IPD) / temple distance in pixels
-          const leftIris = landmarks[473] || landmarks[263];
-          const rightIris = landmarks[468] || landmarks[33];
-          const rawIpd = Math.hypot(leftIris.x - rightIris.x, leftIris.y - rightIris.y);
-          const ipdPixels = rawIpd * displayedW;
+            // Compute Pupillary Distance (IPD) / temple distance in pixels
+            const leftIris = landmarks[473] || landmarks[263];
+            const rightIris = landmarks[468] || landmarks[33];
+            const rawIpd = Math.hypot(leftIris.x - rightIris.x, leftIris.y - rightIris.y);
+            const ipdPixels = rawIpd * displayedW;
 
-          const frameMm = currentProd?.dimensions?.frameWidth || 138;
-          // Adult human baseline IPD is ~63mm. Scale frames realistically:
-          const glassesWidthPx = ipdPixels * (frameMm / 63.0);
-          const targetWidth = Math.max(22, Math.min(56, (glassesWidthPx / containerW) * 100));
+            const frameMm = currentProd?.dimensions?.frameWidth || 138;
+            // Adult human baseline IPD is ~63mm. Scale frames realistically:
+            const glassesWidthPx = ipdPixels * (frameMm / 63.0);
+            const targetWidth = Math.max(22, Math.min(56, (glassesWidthPx / containerW) * 100));
 
-          // Real-time 3D Head Pose
-          const pose = calculateHeadPose(landmarks);
-          const targetYaw = pose.yaw; // Looking left/right
-          const targetPitch = pose.pitch; // Looking up/down
-          const targetRoll = pose.roll; // Head tilt
+            // Real-time 3D Head Pose
+            const pose = calculateHeadPose(landmarks);
+            const targetYaw = pose.yaw; // Looking left/right
+            const targetPitch = pose.pitch; // Looking up/down
+            const targetRoll = pose.roll; // Head tilt
 
-          // Low-Pass Exponential Smoothing (Lerp) for rock-solid 60 FPS motion without jitter
-          const alpha = 0.35;
-          const s = smoothedPoseRef.current;
-          s.x += alpha * (targetX - s.x);
-          s.y += alpha * (targetY - s.y);
-          s.width += alpha * (targetWidth - s.width);
-          s.yaw += alpha * (targetYaw - s.yaw);
-          s.pitch += alpha * (targetPitch - s.pitch);
-          s.roll += alpha * (targetRoll - s.roll);
+            // Low-Pass Exponential Smoothing (Lerp) for rock-solid 60 FPS motion without jitter
+            const alpha = 0.35;
+            const s = smoothedPoseRef.current;
+            s.x += alpha * (targetX - s.x);
+            s.y += alpha * (targetY - s.y);
+            s.width += alpha * (targetWidth - s.width);
+            s.yaw += alpha * (targetYaw - s.yaw);
+            s.pitch += alpha * (targetPitch - s.pitch);
+            s.roll += alpha * (targetRoll - s.roll);
 
-          // Direct DOM style manipulation bypassing React reconciliation for pure 60 FPS
-          overlay.style.opacity = '1';
-          overlay.style.left = `${s.x.toFixed(2)}%`;
-          overlay.style.top = `${s.y.toFixed(2)}%`;
-          overlay.style.width = `${s.width.toFixed(2)}%`;
-          overlay.style.transform = `translate(-50%, -50%) perspective(1200px) rotateY(${s.yaw.toFixed(2)}deg) rotateX(${(-s.pitch).toFixed(2)}deg) rotateZ(${(-s.roll).toFixed(2)}deg)`;
+            // Direct DOM style manipulation bypassing React reconciliation for pure 60 FPS
+            overlay.style.opacity = '1';
+            overlay.style.left = `${s.x.toFixed(2)}%`;
+            overlay.style.top = `${s.y.toFixed(2)}%`;
+            overlay.style.width = `${s.width.toFixed(2)}%`;
+            overlay.style.transform = `translate(-50%, -50%) perspective(1200px) rotateY(${s.yaw.toFixed(2)}deg) rotateX(${(-s.pitch).toFixed(2)}deg) rotateZ(${(-s.roll).toFixed(2)}deg)`;
 
-          // Temple arms dynamically angle and reveal when looking left or right
-          if (leftTemple) {
-            // Turning to screen-left (yaw < -3) reveals left temple extending back to ear
-            const leftOpacity = s.yaw < -3 ? Math.min(1, Math.abs(s.yaw) / 18) : 0;
-            leftTemple.style.opacity = leftOpacity.toFixed(2);
+            // Temple arms dynamically angle and reveal when looking left or right
+            if (leftTemple) {
+              const leftOpacity = s.yaw < -3 ? Math.min(1, Math.abs(s.yaw) / 18) : 0;
+              leftTemple.style.opacity = leftOpacity.toFixed(2);
+            }
+            if (rightTemple) {
+              const rightOpacity = s.yaw > 3 ? Math.min(1, Math.abs(s.yaw) / 18) : 0;
+              rightTemple.style.opacity = rightOpacity.toFixed(2);
+            }
+
+            setIsFaceDetected(true);
+          } else {
+            setIsFaceDetected(false);
           }
-          if (rightTemple) {
-            // Turning to screen-right (yaw > 3) reveals right temple extending back to ear
-            const rightOpacity = s.yaw > 3 ? Math.min(1, Math.abs(s.yaw) / 18) : 0;
-            rightTemple.style.opacity = rightOpacity.toFixed(2);
-          }
-
-          setIsFaceDetected(true);
-        } else {
-          setIsFaceDetected(false);
+        } catch (e) {
+          // Frame drop safe
         }
-      } catch (e) {
-        // Frame drop safe
+      } else {
+        // Fallback: If landmarker still loading, show spectacles centered on screen
+        overlay.style.opacity = '1';
+        overlay.style.left = '50%';
+        overlay.style.top = '48%';
+        overlay.style.width = '38%';
+        overlay.style.transform = 'translate(-50%, -50%)';
       }
     };
 
-    loop(performance.now());
+    loop();
   }, []);
+
+  // Start Live Camera IMMEDIATELY, then initialize MediaPipe in parallel
+  const startCamera = useCallback(async () => {
+    stopCamera();
+    setIsCameraStarting(true);
+    setCameraError(null);
+
+    try {
+      console.log('🎥 [LiveLookModal] Starting camera request...');
+      const constraints = {
+        video: {
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      };
+
+      // 4-second timeout to detect if Windows webcam is locked exclusively by another tab (e.g. VirtualTryOn tab)
+      const getUserMediaPromise = navigator.mediaDevices.getUserMedia(constraints);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('CAMERA_TIMEOUT')), 4000)
+      );
+
+      const stream = await Promise.race([getUserMediaPromise, timeoutPromise]);
+      streamRef.current = stream;
+
+      const video = videoRef.current;
+      if (video) {
+        video.muted = true;
+        video.playsInline = true;
+        video.srcObject = stream;
+
+        // Play video
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          await playPromise.catch(e => console.warn('Video play warning:', e));
+        }
+        startDetectionLoop();
+      }
+      setIsCameraStarting(false);
+
+      // 2. Load MediaPipe FaceLandmarker in parallel (does NOT block camera rendering!)
+      if (!landmarkerRef.current) {
+        try {
+          const landmarker = await createFaceLandmarker();
+          landmarkerRef.current = landmarker;
+          setIsLandmarkerReady(true);
+        } catch (lmErr) {
+          console.warn('FaceLandmarker network load failed, using baseline fitting:', lmErr);
+        }
+      } else {
+        setIsLandmarkerReady(true);
+      }
+
+    } catch (err) {
+      console.error('Camera initialization failed:', err);
+      setIsCameraStarting(false);
+
+      const errName = err?.name || '';
+      if (err?.message === 'CAMERA_TIMEOUT' || errName === 'NotReadableError' || errName === 'TrackStartError') {
+        setCameraError('Your webcam is currently locked by another tab (e.g. your "3D Virtual Try-On" tab with the red recording dot). Please close that tab or click "Switch to Photo View" below.');
+      } else if (errName === 'NotAllowedError' || errName === 'PermissionDeniedError') {
+        setCameraError('Camera access was denied. Please click the camera/lock icon in your browser address bar to allow camera access, then click Retry.');
+      } else {
+        setCameraError('Camera access unavailable. Please grant camera permission or close other camera tabs.');
+      }
+    }
+  }, [stopCamera, startDetectionLoop]);
 
   // Manage camera lifecycle based on isOpen and tryOnMode
   useEffect(() => {
@@ -342,9 +373,7 @@ export function LiveLookModal({
       if (landmarkerRef.current) {
         try {
           landmarkerRef.current.close();
-        } catch (e) {
-          console.warn('Landmarker close warning:', e);
-        }
+        } catch (e) {}
         landmarkerRef.current = null;
       }
     };
@@ -415,7 +444,7 @@ export function LiveLookModal({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setTryOnMode('camera')}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 tryOnMode === 'camera'
                   ? 'bg-[#000042] text-white shadow-md'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -428,7 +457,7 @@ export function LiveLookModal({
             {userSelfie && (
               <button
                 onClick={() => setTryOnMode('photo')}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   tryOnMode === 'photo'
                     ? 'bg-[#000042] text-white shadow-md'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -448,7 +477,7 @@ export function LiveLookModal({
           <button
             onClick={onClose}
             aria-label="Close Live Try-On"
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -461,26 +490,30 @@ export function LiveLookModal({
           onPointerUp={handlePointerUp}
           onTouchStart={handlePointerDown}
           onTouchEnd={handlePointerUp}
-          className="relative flex-1 bg-slate-950 min-h-[400px] sm:min-h-[500px] flex items-center justify-center overflow-hidden select-none"
+          className="relative flex-1 w-full min-h-[420px] sm:min-h-[500px] h-[500px] bg-slate-950 flex items-center justify-center overflow-hidden select-none"
         >
           {tryOnMode === 'camera' ? (
             /* ================= LIVE WEBCAM AR STREAM ================= */
-            <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-              
+            <>
               {/* Mirrored Live Video Feed */}
               <video
                 ref={videoRef}
                 playsInline
                 autoPlay
                 muted
-                className="absolute inset-0 w-full h-full object-cover transform -scale-x-100 pointer-events-none"
+                className="absolute inset-0 w-full h-full object-cover transform -scale-x-100"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
 
               {/* 3D Real-Time Eyewear Superimposition Overlay */}
               <div
                 ref={specsOverlayRef}
-                className="absolute pointer-events-none will-change-transform opacity-0 z-10 transition-opacity duration-150"
+                className="absolute pointer-events-none will-change-transform z-10 transition-opacity duration-150"
                 style={{
+                  left: '50%',
+                  top: '48%',
+                  width: '38%',
+                  transform: 'translate(-50%, -50%)',
                   transformStyle: 'preserve-3d',
                   perspective: '1200px'
                 }}
@@ -553,32 +586,32 @@ export function LiveLookModal({
                   ) : (
                     <>
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                      <span>Center Face in Camera</span>
+                      <span>Align Face to Camera</span>
                     </>
                   )}
                 </div>
 
                 {isFaceDetected && (
                   <div className="px-2.5 py-0.5 rounded-md bg-black/45 backdrop-blur-sm text-[10px] text-slate-300">
-                    Look left or right to inspect 3D fit
+                    Turn head left or right to inspect fit
                   </div>
                 )}
               </div>
 
-              {/* Camera Error Modal Overlay if camera blocked */}
+              {/* Camera Error Modal Overlay if camera blocked or held by another tab */}
               {cameraError && (
                 <div className="absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-6 text-center text-white z-30">
                   <div className="w-14 h-14 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3">
-                    <Camera className="w-7 h-7" />
+                    <AlertTriangle className="w-7 h-7" />
                   </div>
-                  <h4 className="text-base font-bold mb-1">Camera Permission Required</h4>
+                  <h4 className="text-base font-bold mb-1">Webcam In Use or Blocked</h4>
                   <p className="text-xs text-slate-300 max-w-sm mb-4 leading-relaxed">
                     {cameraError}
                   </p>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={startCamera}
-                      className="px-5 py-2.5 rounded-full bg-white text-slate-900 font-bold text-xs hover:bg-slate-100 transition-all flex items-center gap-2 shadow-md"
+                      className="px-5 py-2.5 rounded-full bg-white text-slate-900 font-bold text-xs hover:bg-slate-100 transition-all flex items-center gap-2 shadow-md cursor-pointer"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       <span>Retry Camera</span>
@@ -586,7 +619,7 @@ export function LiveLookModal({
                     {userSelfie && (
                       <button
                         onClick={() => setTryOnMode('photo')}
-                        className="px-5 py-2.5 rounded-full bg-white/10 text-white font-bold text-xs hover:bg-white/20 transition-all border border-white/20"
+                        className="px-5 py-2.5 rounded-full bg-white/10 text-white font-bold text-xs hover:bg-white/20 transition-all border border-white/20 cursor-pointer"
                       >
                         Switch to Photo View
                       </button>
@@ -594,8 +627,7 @@ export function LiveLookModal({
                   </div>
                 </div>
               )}
-
-            </div>
+            </>
           ) : (
             /* ================= STATIC 3D AVATAR PHOTO MODE ================= */
             userSelfie ? (
@@ -642,7 +674,7 @@ export function LiveLookModal({
                 </div>
                 <button
                   onClick={() => setTryOnMode('camera')}
-                  className="mt-2 px-6 py-2.5 rounded-full bg-[#00bac6] hover:bg-[#00a1ad] active:scale-95 text-[#000042] font-bold text-xs transition-all flex items-center justify-center gap-2 mx-auto shadow-md"
+                  className="mt-2 px-6 py-2.5 rounded-full bg-[#00bac6] hover:bg-[#00a1ad] active:scale-95 text-[#000042] font-bold text-xs transition-all flex items-center justify-center gap-2 mx-auto shadow-md cursor-pointer"
                 >
                   <Video className="w-4 h-4" />
                   <span>Turn On Live Camera</span>
@@ -691,7 +723,7 @@ export function LiveLookModal({
                         key={col.id}
                         title={col.name}
                         onClick={() => setSelectedColor(col)}
-                        className={`w-3.5 h-3.5 rounded-full transition-transform ${
+                        className={`w-3.5 h-3.5 rounded-full transition-transform cursor-pointer ${
                           isColSelected ? 'ring-2 ring-white scale-125' : 'opacity-70 hover:opacity-100'
                         }`}
                         style={{ backgroundColor: col.hex }}
@@ -725,7 +757,7 @@ export function LiveLookModal({
                 <button
                   key={product.id || product.sku}
                   onClick={() => setCurrentIndex(idx)}
-                  className={`relative shrink-0 w-16 h-14 rounded-xl border p-1 transition-all flex flex-col items-center justify-center bg-[#f9fafb] ${
+                  className={`relative shrink-0 w-16 h-14 rounded-xl border p-1 transition-all flex flex-col items-center justify-center bg-[#f9fafb] cursor-pointer ${
                     isSelected
                       ? 'border-[#000042] ring-2 ring-[#000042]/20 shadow-md bg-blue-50/50 scale-105'
                       : 'border-slate-200 hover:border-slate-400 opacity-75 hover:opacity-100'
@@ -752,7 +784,7 @@ export function LiveLookModal({
                   onClose();
                   onOpen360(activeProduct, selectedColor);
                 }}
-                className="px-4 py-2 rounded-full border border-slate-900 text-slate-900 text-xs font-bold hover:bg-slate-900 hover:text-white transition-all flex items-center gap-1.5 shadow-sm"
+                className="px-4 py-2 rounded-full border border-slate-900 text-slate-900 text-xs font-bold hover:bg-slate-900 hover:text-white transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <RotateCw className="w-3.5 h-3.5" />
                 <span>360° View</span>
@@ -763,7 +795,7 @@ export function LiveLookModal({
               onClick={() => {
                 if (onAddToCart) onAddToCart(activeProduct);
               }}
-              className="px-5 py-2 rounded-full bg-[#000042] text-white text-xs font-bold hover:bg-[#000028] transition-all flex items-center gap-1.5 shadow-md uppercase tracking-wider"
+              className="px-5 py-2 rounded-full bg-[#000042] text-white text-xs font-bold hover:bg-[#000028] transition-all flex items-center gap-1.5 shadow-md uppercase tracking-wider cursor-pointer"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
               <span>Add to Cart</span>

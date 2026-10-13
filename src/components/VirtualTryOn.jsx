@@ -97,8 +97,19 @@ export function VirtualTryOn({
 
     setupVisionAndCamera();
 
+    // Release camera when tab is switched to background so other tabs can use webcam
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        stopCamera();
+      } else if (isMounted) {
+        startCamera();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     return () => {
       isMounted = false;
+      document.removeEventListener('visibilitychange', handleVisibility);
       stopCamera();
       if (animFrameIdRef.current) cancelAnimationFrame(animFrameIdRef.current);
       if (landmarkerRef.current) {
