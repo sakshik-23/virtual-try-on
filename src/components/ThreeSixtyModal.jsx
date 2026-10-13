@@ -416,8 +416,8 @@ function buildAuthenticShowroom3DModel(group, product, activeColor, texture, fra
     const hookMesh = new THREE.Mesh(hookGeom, earTipMat);
     group.add(hookMesh);
 
-    // Silicone Nose Pads (for metal/wireframe and hybrid frames only, excluding frames with photorealistic pads)
-    if ((isMetal || shape === 'cat-eye') && !isAviator && !isClubmaster) {
+    // Silicone Nose Pads (for metal/wireframe and hybrid frames only, excluding frames with photorealistic pads or acetate bridges)
+    if ((isMetal || shape === 'cat-eye') && !isAviator && !isClubmaster && !isTortoise && shape !== 'wayfarer') {
       const padX = side * 0.20;
       const padY = -0.08;
       const padZ = -0.06;
