@@ -7,6 +7,8 @@ import { TryOnPage } from './pages/TryOnPage';
 import { ThreeSixtyModal } from './components/ThreeSixtyModal';
 import { StyleQuizModal } from './components/StyleQuizModal';
 import { CartDrawer } from './components/CartDrawer';
+import { WishlistDrawer } from './components/WishlistDrawer';
+import { UserProfileModal } from './components/UserProfileModal';
 import { LiveLookModal } from './components/LiveLookModal';
 import { EYEWEAR_CATALOG } from './services/catalogData';
 import { productRepository } from './services/productRepository';
@@ -128,12 +130,57 @@ export default function App() {
     setIsCartOpen(true);
   };
 
+  // Wishlist Drawer State
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [wishlistItems, setWishlistItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('spectra_tryon_wishlist');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('spectra_tryon_wishlist', JSON.stringify(wishlistItems));
+    } catch (e) {
+      console.warn('Wishlist storage error', e);
+    }
+  }, [wishlistItems]);
+
+  const handleToggleWishlist = (product) => {
+    setWishlistItems(prev => {
+      const exists = prev.some(item => item.id === product.id || item.sku === product.sku);
+      if (exists) {
+        return prev.filter(item => item.id !== product.id && item.sku !== product.sku);
+      } else {
+        return [...prev, product];
+      }
+    });
+  };
+
+  // User Profile Modal State
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const handleClearFaceData = () => {
+    setUserSelfie(null);
+    setFaceMetrics(null);
+    try {
+      localStorage.removeItem('spectra_user_selfie');
+      localStorage.removeItem('spectra_face_metrics');
+    } catch (e) {}
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 flex flex-col justify-between selection:bg-[#000042] selection:text-white">
       {/* 1. Clean White Navbar */}
       <Navbar
         cartCount={cartItems.length}
+        wishlistCount={wishlistItems.length}
         onOpenCart={() => setIsCartOpen(true)}
+        onOpenWishlist={() => setIsWishlistOpen(true)}
+        onOpenProfile={() => setIsProfileOpen(true)}
         onOpenStyleQuiz={() => setIsStyleQuizOpen(true)}
       />
 
@@ -156,6 +203,8 @@ export default function App() {
                 faceMetrics={faceMetrics}
                 is3DTryOnActive={is3DTryOnActive}
                 onToggle3DTryOn={() => setIs3DTryOnActive(!is3DTryOnActive)}
+                wishlistItems={wishlistItems}
+                onToggleWishlist={handleToggleWishlist}
               />
             }
           />
@@ -175,6 +224,8 @@ export default function App() {
                 faceMetrics={faceMetrics}
                 is3DTryOnActive={is3DTryOnActive}
                 onToggle3DTryOn={() => setIs3DTryOnActive(!is3DTryOnActive)}
+                wishlistItems={wishlistItems}
+                onToggleWishlist={handleToggleWishlist}
               />
             }
           />
@@ -195,6 +246,8 @@ export default function App() {
                 faceMetrics={faceMetrics}
                 is3DTryOnActive={is3DTryOnActive}
                 onToggle3DTryOn={() => setIs3DTryOnActive(!is3DTryOnActive)}
+                wishlistItems={wishlistItems}
+                onToggleWishlist={handleToggleWishlist}
               />
             }
           />
@@ -262,7 +315,7 @@ export default function App() {
       </main>
 
       {/* 3. Clean Footer */}
-      <footer className="w-full border-t border-slate-200 bg-[#f9fafb] py-8 text-xs text-slate-500">
+      <footer className="w-full border-t border-slate-200 bg-[#f9fafb] py-6 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 font-medium">
             <span className="font-bold text-slate-800">SPECTRA OPTICS 3D VIRTUAL STUDIO</span>
@@ -270,10 +323,8 @@ export default function App() {
             <span>Real-Time WebGL & MediaPipe Engine</span>
           </div>
 
-          <div className="flex items-center gap-4 text-slate-500">
-            <span>Client-Side Biometric Privacy</span>
-            <span>•</span>
-            <span>ACID-Compliant Architecture</span>
+          <div className="text-slate-400">
+            © {new Date().getFullYear()} Spectra Optics. All rights reserved.
           </div>
         </div>
       </footer>
@@ -314,6 +365,31 @@ export default function App() {
         faceMetrics={faceMetrics}
         onAddToCart={handleAddToCart}
         onOpen360={handleOpen360}
+      />
+
+      {/* 5. Wishlist Slide-Over Drawer */}
+      <WishlistDrawer
+        isOpen={isWishlistOpen}
+        onClose={() => setIsWishlistOpen(false)}
+        wishlistItems={wishlistItems}
+        onRemoveItem={(item) => handleToggleWishlist(item)}
+        onAddToCart={handleAddToCart}
+        onTryOn={handleOpenLiveTryOn}
+      />
+
+      {/* 6. User Profile & Biometrics Modal */}
+      <UserProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        userSelfie={userSelfie}
+        faceMetrics={faceMetrics}
+        onOpenTryOn={() => {
+          setIsProfileOpen(false);
+          navigate('/try-on');
+        }}
+        onClearFaceData={handleClearFaceData}
+        wishlistCount={wishlistItems.length}
+        cartCount={cartItems.length}
       />
     </div>
   );

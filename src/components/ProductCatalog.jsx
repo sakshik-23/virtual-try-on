@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCw, Sparkles, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { RotateCw, Sparkles, SlidersHorizontal, ChevronDown, Heart } from 'lucide-react';
 import { EYEWEAR_CATALOG } from '../services/catalogData';
 
 export function ProductCatalog({
@@ -14,7 +14,9 @@ export function ProductCatalog({
   userSelfie = null,
   faceMetrics = null,
   is3DTryOnActive = true,
-  onToggle3DTryOn
+  onToggle3DTryOn,
+  wishlistItems = [],
+  onToggleWishlist
 }) {
   const navigate = useNavigate();
   const [selectedShape, setSelectedShape] = useState('all');
@@ -144,19 +146,6 @@ export function ProductCatalog({
             </button>
           )}
 
-          {/* Sort By */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
-            <span className="text-slate-400">Sort by</span>
-            <span className="font-bold uppercase tracking-wider text-slate-900">RECOMMENDED</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
-          </div>
-
-          {/* Filters */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
-            <span className="text-slate-400">Filters</span>
-            <span className="font-bold uppercase tracking-wider text-slate-900">ALL</span>
-          </div>
         </div>
       </div>
 
@@ -239,6 +228,8 @@ export function ProductCatalog({
       {/* Spectacles Grid (Matching Screenshot 5) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-2">
         {filteredProducts.map((product) => {
+          const isWishlisted = wishlistItems.some(item => item.id === product.id || item.sku === product.sku);
+
           return (
             <div
               key={product.id}
@@ -246,6 +237,21 @@ export function ProductCatalog({
             >
               {/* Product Visual Area */}
               <div className="relative aspect-[4/3] bg-[#f8f9fa] overflow-hidden flex items-center justify-center">
+                {/* Wishlist Heart Toggle Button */}
+                {onToggleWishlist && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleWishlist(product);
+                    }}
+                    title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                    aria-label="Toggle Wishlist"
+                    className="absolute top-2.5 right-2.5 z-20 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow-xs backdrop-blur-xs flex items-center justify-center text-slate-400 hover:text-rose-500 hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <Heart className={`w-4 h-4 ${isWishlisted ? 'text-rose-500 fill-rose-500' : ''}`} />
+                  </button>
+                )}
+
                 {/* If 3D Try-On is Active AND user has taken a selfie: display selfie with real glasses tried on! */}
                 {is3DTryOnActive && userSelfie ? (
                   <div

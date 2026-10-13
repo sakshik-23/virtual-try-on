@@ -6,6 +6,8 @@ export function Navbar({
   cartCount = 0,
   wishlistCount = 0,
   onOpenCart,
+  onOpenWishlist,
+  onOpenProfile,
   onOpenStyleQuiz
 }) {
   return (
@@ -69,7 +71,7 @@ export function Navbar({
           {onOpenStyleQuiz && (
             <button
               onClick={onOpenStyleQuiz}
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors"
+              className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors cursor-pointer"
             >
               <Compass className="w-3.5 h-3.5 text-[#000042]" />
               <span>Style & Outfit Matcher</span>
@@ -87,19 +89,24 @@ export function Navbar({
           </div>
 
           {/* Wishlist */}
-          <div className="relative p-2 text-slate-700 hover:text-slate-900 cursor-pointer">
-            <Heart className="w-5 h-5" />
+          <button
+            onClick={onOpenWishlist}
+            aria-label="View Wishlist"
+            className="relative p-2 text-slate-700 hover:text-rose-600 transition-colors cursor-pointer rounded-full hover:bg-slate-100"
+          >
+            <Heart className={`w-5 h-5 ${wishlistCount > 0 ? 'text-rose-500 fill-rose-500' : ''}`} />
             {wishlistCount > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
                 {wishlistCount}
               </span>
             )}
-          </div>
+          </button>
 
           {/* Shopping Bag / Cart */}
-          <div
+          <button
             onClick={onOpenCart}
-            className="relative p-2 text-slate-700 hover:text-slate-900 cursor-pointer"
+            aria-label="View Shopping Cart"
+            className="relative p-2 text-slate-700 hover:text-[#000042] transition-colors cursor-pointer rounded-full hover:bg-slate-100"
           >
             <ShoppingBag className="w-5 h-5" />
             {cartCount > 0 && (
@@ -107,12 +114,16 @@ export function Navbar({
                 {cartCount}
               </span>
             )}
-          </div>
+          </button>
 
-          {/* User Account */}
-          <div className="p-2 text-slate-700 hover:text-slate-900 cursor-pointer hidden sm:block">
+          {/* User Account Profile */}
+          <button
+            onClick={onOpenProfile}
+            aria-label="View User Profile"
+            className="p-2 text-slate-700 hover:text-[#000042] transition-colors cursor-pointer rounded-full hover:bg-slate-100 hidden sm:block"
+          >
             <User className="w-5 h-5" />
-          </div>
+          </button>
         </div>
       </div>
     </header>
