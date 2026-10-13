@@ -380,35 +380,35 @@ function buildAuthenticShowroom3DModel(group, product, activeColor, texture, fra
   const hingeX = (frameWidth / 2) * hingeFractionX;
   const hingeY = frameHeight * hingeFractionY;
 
-  const stemRadius = isMetal ? 0.02 : 0.038;
-  const hookRadius = isMetal ? 0.032 : 0.042;
+  const stemRadius = isMetal ? 0.016 : 0.024;
+  const hookRadius = isMetal ? 0.022 : 0.029;
 
   for (let side of [-1, 1]) {
     const x = side * hingeX;
 
     // Metallic Hinge Barrel
-    const hingeGeom = new THREE.CylinderGeometry(0.022, 0.022, 0.06, 12);
+    const hingeGeom = new THREE.CylinderGeometry(0.018, 0.018, 0.05, 12);
     const hingeMesh = new THREE.Mesh(hingeGeom, templeMat);
     hingeMesh.position.set(x, hingeY, -0.015);
     group.add(hingeMesh);
 
     // Part A: Front Temple Stem (traveling straight back along -Z to Z = -1.6)
-    // Tucked naturally behind the frame end-pieces without splaying awkwardly
+    // Naturally tapers inward toward the ears matching anatomical head curvature
     const stemCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(x, hingeY, -0.02),
-      new THREE.Vector3(x * 0.99, hingeY, -0.8),
-      new THREE.Vector3(x * 0.96, hingeY, -1.6)
+      new THREE.Vector3(x * 0.94, hingeY, -0.8),
+      new THREE.Vector3(x * 0.88, hingeY - 0.01, -1.6)
     ]);
     const stemGeom = new THREE.TubeGeometry(stemCurve, 24, stemRadius, 10, false);
     const stemMesh = new THREE.Mesh(stemGeom, templeMat);
     group.add(stemMesh);
 
     // Part B: Ergonomic Ear Hook with Acetate Sleeve Tip (curving down to Z = -2.45)
-    // Replicates real showroom eyewear geometry
+    // Tucks neatly behind the ear, visible cleanly through transparent lenses
     const hookCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(x * 0.96, hingeY, -1.6),
-      new THREE.Vector3(x * 0.94, hingeY - 0.06, -2.05),
-      new THREE.Vector3(x * 0.91, hingeY - 0.36, -2.48)
+      new THREE.Vector3(x * 0.88, hingeY - 0.01, -1.6),
+      new THREE.Vector3(x * 0.85, hingeY - 0.08, -2.05),
+      new THREE.Vector3(x * 0.82, hingeY - 0.38, -2.45)
     ]);
     const hookGeom = new THREE.TubeGeometry(hookCurve, 20, hookRadius, 10, false);
     const hookMesh = new THREE.Mesh(hookGeom, earTipMat);
