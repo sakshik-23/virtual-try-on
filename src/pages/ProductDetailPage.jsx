@@ -4,6 +4,7 @@ import { Heart, ShieldCheck, RefreshCw, Sparkles, RotateCw, Check, ArrowLeft } f
 import { EYEWEAR_CATALOG } from '../services/catalogData';
 
 export function ProductDetailPage({
+  catalogProducts = EYEWEAR_CATALOG,
   onOpen360,
   onOpenLiveTryOn,
   onAddToCart,
@@ -13,7 +14,8 @@ export function ProductDetailPage({
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const product = EYEWEAR_CATALOG.find((p) => p.id === id) || EYEWEAR_CATALOG[0];
+  const productList = catalogProducts && catalogProducts.length > 0 ? catalogProducts : EYEWEAR_CATALOG;
+  const product = productList.find((p) => String(p.id) === String(id) || String(p.sku) === String(id)) || productList[0];
 
   const [selectedColor, setSelectedColor] = useState(
     product.availableColors?.find((c) => c.id === product.defaultColor) || product.availableColors?.[0]
@@ -74,11 +76,11 @@ export function ProductDetailPage({
             ) : (
               <div className="relative w-full p-4 flex flex-col items-center justify-center">
                 <img
-                  src={product.image || product.frontImage || '/images/eyewear/wayfarer_black.jpg'}
+                  src={product.frontImage || product.exactImage || product.image || '/images/eyewear/front_wayfarer.png'}
                   alt={product.name}
                   className="w-full max-h-80 object-contain drop-shadow-md transition-transform hover:scale-105 duration-300"
                   onError={(e) => {
-                    const fallback = product.frontImage || '/images/eyewear/front_wayfarer.png';
+                    const fallback = product.image || '/images/eyewear/front_wayfarer.png';
                     if (e.currentTarget.src !== fallback) {
                       e.currentTarget.src = fallback;
                     }

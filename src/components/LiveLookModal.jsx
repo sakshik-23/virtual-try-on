@@ -21,9 +21,22 @@ export function LiveLookModal({
   // Active product index
   const [currentIndex, setCurrentIndex] = useState(() => {
     if (!initialProduct) return 0;
-    const idx = productList.findIndex(p => p.id === initialProduct.id || p.sku === initialProduct.sku);
+    const idx = productList.findIndex(p => String(p.id) === String(initialProduct.id) || p.sku === initialProduct.sku);
     return idx >= 0 ? idx : 0;
   });
+
+  // Always update currentIndex whenever a user selects a product from catalog
+  useEffect(() => {
+    if (initialProduct && productList.length > 0) {
+      const idx = productList.findIndex(p => String(p.id) === String(initialProduct.id) || p.sku === initialProduct.sku);
+      if (idx >= 0) {
+        setCurrentIndex(idx);
+        if (productList[idx]?.availableColors?.length) {
+          setSelectedColor(productList[idx].availableColors[0]);
+        }
+      }
+    }
+  }, [initialProduct, productList]);
 
   const activeProduct = productList[currentIndex] || productList[0];
   const [selectedColor, setSelectedColor] = useState(activeProduct.availableColors?.[0] || null);

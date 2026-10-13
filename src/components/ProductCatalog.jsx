@@ -275,18 +275,18 @@ export function ProductCatalog({
                     </div>
                   </div>
                 ) : (
-                  /* Standard Real Photorealistic Studio Image */
+                  /* Standard Real Photorealistic Studio Image (Direct Front Eye-Level for 100% Uniform Card Alignment) */
                   <div
                     className="w-full h-full p-4 flex items-center justify-center cursor-pointer bg-white"
                     onClick={() => navigate(`/product/${product.id}`)}
                   >
                     <img
-                      src={product.image || product.frontImage || '/images/eyewear/wayfarer_black.jpg'}
+                      src={product.frontImage || product.exactImage || product.image || '/images/eyewear/front_wayfarer.png'}
                       alt={product.name}
                       className="w-full h-full object-contain max-h-52 drop-shadow-sm transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
                       onError={(e) => {
-                        const fallback = product.frontImage || '/images/eyewear/front_wayfarer.png';
+                        const fallback = product.image || '/images/eyewear/front_wayfarer.png';
                         if (e.currentTarget.src !== fallback) {
                           e.currentTarget.src = fallback;
                         }

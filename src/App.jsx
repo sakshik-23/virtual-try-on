@@ -249,6 +249,7 @@ export default function App() {
             path="/product/:id"
             element={
               <ProductDetailPage
+                catalogProducts={catalogProducts}
                 onOpen360={handleOpen360}
                 onOpenLiveTryOn={handleOpenLiveTryOn}
                 onAddToCart={handleAddToCart}
