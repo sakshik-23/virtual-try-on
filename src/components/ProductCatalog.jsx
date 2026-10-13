@@ -242,10 +242,10 @@ export function ProductCatalog({
           return (
             <div
               key={product.id}
-              className="group bg-white rounded-2xl border border-slate-200 hover:border-slate-400 overflow-hidden transition-all duration-300 flex flex-col justify-between hover:shadow-lg"
+              className="group bg-white border border-slate-200 hover:border-slate-400 transition-all duration-200 flex flex-col justify-between"
             >
               {/* Product Visual Area */}
-              <div className="relative aspect-square bg-[#f9fafb] overflow-hidden flex items-center justify-center">
+              <div className="relative aspect-[4/3] bg-[#f8f9fa] overflow-hidden flex items-center justify-center">
                 {/* If 3D Try-On is Active AND user has taken a selfie: display selfie with real glasses tried on! */}
                 {is3DTryOnActive && userSelfie ? (
                   <div
@@ -275,18 +275,18 @@ export function ProductCatalog({
                     </div>
                   </div>
                 ) : (
-                  /* Standard Real Photorealistic Studio Image (Direct Front Eye-Level for 100% Uniform Card Alignment) */
+                  /* Standard 3D Studio Perspective Image (All Aligned to Lenskart Angle) */
                   <div
-                    className="w-full h-full p-4 flex items-center justify-center cursor-pointer bg-white"
+                    className="w-full h-full p-5 flex items-center justify-center cursor-pointer bg-white"
                     onClick={() => navigate(`/product/${product.id}`)}
                   >
                     <img
-                      src={product.frontImage || product.exactImage || product.image || '/images/eyewear/front_wayfarer.png'}
+                      src={product.image || product.frontImage || '/images/eyewear/wayfarer_black.jpg'}
                       alt={product.name}
-                      className="w-full h-full object-contain max-h-52 drop-shadow-sm transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-full object-contain max-h-48 drop-shadow-sm transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
                       onError={(e) => {
-                        const fallback = product.image || '/images/eyewear/front_wayfarer.png';
+                        const fallback = product.frontImage || '/images/eyewear/front_wayfarer.png';
                         if (e.currentTarget.src !== fallback) {
                           e.currentTarget.src = fallback;
                         }
@@ -295,11 +295,11 @@ export function ProductCatalog({
                   </div>
                 )}
 
-                {/* Overlay Action Buttons: [ Try on ] & [ 360° ] (Matching Screenshot 1) */}
-                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between opacity-90 group-hover:opacity-100 transition-opacity">
+                {/* Subtle Hover Action Buttons: [ Try on ] & [ 360° ] */}
+                <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <button
                     onClick={() => onOpenLiveTryOn(product)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-900 text-slate-900 rounded-none text-[11px] font-bold hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-900 text-slate-900 text-[11px] font-bold hover:bg-slate-900 hover:text-white transition-all shadow-sm"
                   >
                     <Sparkles className="w-3 h-3 text-[#00bac6]" />
                     <span>Try on</span>
@@ -307,7 +307,7 @@ export function ProductCatalog({
 
                   <button
                     onClick={() => onOpen360(product, product.availableColors[0])}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-900 text-slate-900 rounded-none text-[11px] font-bold hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-900 text-slate-900 text-[11px] font-bold hover:bg-slate-900 hover:text-white transition-all shadow-sm"
                   >
                     <RotateCw className="w-3 h-3" />
                     <span>360°</span>
@@ -315,50 +315,40 @@ export function ProductCatalog({
                 </div>
               </div>
 
-              {/* Product Info */}
+              {/* Product Info (Matching Lenskart Screenshot Exactly) */}
               <div
-                className="p-4 cursor-pointer"
+                className="p-3.5 cursor-pointer bg-white"
                 onClick={() => navigate(`/product/${product.id}`)}
               >
-                <div className="flex items-center justify-between mb-1.5">
-                  <h3 className="font-serif font-bold text-slate-900 text-base truncate">
-                    {product.name}
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="font-serif font-bold text-slate-900 text-sm truncate max-w-[200px]">
+                    {product.brand || 'Vincent Chase'} • {product.name}
                   </h3>
                 </div>
 
                 {/* Color Swatch Dots */}
-                <div className="flex items-center gap-1.5 mb-2">
+                <div className="flex items-center gap-1.5 mb-1.5">
                   {product.availableColors.slice(0, 3).map((c) => (
                     <span
                       key={c.id}
-                      className="w-4 h-4 rounded-full border border-slate-300"
+                      className="w-3.5 h-3.5 rounded-full border border-slate-300"
                       style={{ backgroundColor: c.hex }}
                     />
                   ))}
                   <span className="text-[11px] text-slate-500 font-medium">
-                    +{product.availableColors.length + 4}
+                    +{product.availableColors.length + 3}
                   </span>
                 </div>
 
                 {/* Price */}
                 <div className="flex items-baseline gap-2">
-                  <span className="text-base font-bold text-slate-900">
+                  <span className="text-sm font-bold text-slate-900">
                     ₹{product.price}
                   </span>
                   <span className="text-xs text-slate-400 line-through">
                     ₹{product.originalPrice}
                   </span>
                 </div>
-              </div>
-
-              {/* Action Button: SELECT LENSES */}
-              <div className="px-4 pb-4">
-                <button
-                  onClick={() => onAddToCart(product)}
-                  className="w-full py-2.5 bg-[#000042] hover:bg-[#000028] text-white text-[11px] font-bold uppercase tracking-wider transition-all"
-                >
-                  SELECT LENSES
-                </button>
               </div>
             </div>
           );
