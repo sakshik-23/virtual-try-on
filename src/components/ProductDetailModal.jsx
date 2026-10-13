@@ -20,12 +20,14 @@ export function ProductDetailModal({
 
   // Exact 3D Facial Measurement Fitting based on Eye Distance (IPD)
   const posX = faceMetrics?.noseBridge?.x != null ? faceMetrics.noseBridge.x * 100 : 50.0;
-  const posY = faceMetrics?.noseBridge?.y != null ? faceMetrics.noseBridge.y * 100 : 51.5;
-  const tilt = faceMetrics?.tiltDeg || 0;
+  const posY = faceMetrics?.noseBridge?.y != null ? faceMetrics.noseBridge.y * 100 : 49.0;
+  let rawTilt = faceMetrics?.tiltDeg || 0;
+  if (Math.abs(rawTilt) > 15) rawTilt = 0;
+  const tilt = Math.max(-8, Math.min(8, rawTilt));
   const frameMm = product.dimensions?.frameWidth || 138;
   const finalWidth = faceMetrics?.ipdRatio && faceMetrics.ipdRatio > 0.08 && faceMetrics.ipdRatio < 0.5
-    ? Math.min(44.0, Math.max(32.0, faceMetrics.ipdRatio * (frameMm / 63.0) * 85))
-    : 36.0;
+    ? Math.min(50.0, Math.max(34.0, faceMetrics.ipdRatio * (frameMm / 63.0) * 105))
+    : 38.0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -55,9 +57,9 @@ export function ProductDetailModal({
                   }}
                 >
                   <img
-                    src={product.exactImage || product.frontImage || product.image}
+                    src={product.frontImage || product.image}
                     alt={product.name}
-                    className="w-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
+                    className="w-full object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]"
                   />
                 </div>
                 <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-white text-[10px] font-bold border border-white/10 flex items-center gap-1.5">

@@ -42,23 +42,25 @@ export function ProductCatalog({
 
   // Precise Optometric Face Geometry Fitting Calculation based on Eye Distance (IPD)
   const getGlassesFittingStyle = (product) => {
-    // 1. Center coordinates: Nose bridge (nasion between eyes)
+    // 1. Center coordinates: Optical center between pupils
     const posX = faceMetrics?.noseBridge?.x != null ? faceMetrics.noseBridge.x * 100 : 50.0;
-    const baseY = faceMetrics?.noseBridge?.y != null ? faceMetrics.noseBridge.y * 100 : 51.5;
+    const baseY = faceMetrics?.noseBridge?.y != null ? faceMetrics.noseBridge.y * 100 : 49.0;
     const posY = baseY + (fitCalibration.offsetY || 0);
 
-    // 2. Head tilt angle in degrees
-    const tilt = faceMetrics?.tiltDeg || 0;
+    // 2. Head tilt angle: clamp to natural realistic range to prevent crooked overlays
+    let rawTilt = faceMetrics?.tiltDeg || 0;
+    if (Math.abs(rawTilt) > 15) rawTilt = 0; // Fix legacy corrupted localStorage tilt
+    const tilt = Math.max(-8, Math.min(8, rawTilt));
 
     // 3. Proportional physical width based on eye distance (IPD)
-    // Standard human IPD is ~63mm. Frame width (e.g. 138mm standard, 134mm narrow, 144mm wide)
-    // Optometric Formula: Frame Width = IPD * (frameWidth / 63mm)
+    // Standard human IPD is ~63mm. Frame width (e.g. 138mm standard, 134mm narrow, 140mm wide)
     let baseWidthPercent;
     if (faceMetrics?.ipdRatio && faceMetrics.ipdRatio > 0.08 && faceMetrics.ipdRatio < 0.5) {
       const frameMm = product.dimensions?.frameWidth || 138;
-      baseWidthPercent = Math.min(44.0, Math.max(32.0, faceMetrics.ipdRatio * (frameMm / 63.0) * 85));
+      // Proportional optometric scale
+      baseWidthPercent = Math.min(50.0, Math.max(34.0, faceMetrics.ipdRatio * (frameMm / 63.0) * 105));
     } else {
-      baseWidthPercent = 36.0;
+      baseWidthPercent = 38.0;
     }
 
     const finalWidth = baseWidthPercent * (fitCalibration.scaleMultiplier || 1.0);
@@ -257,9 +259,9 @@ export function ProductCatalog({
                       style={getGlassesFittingStyle(product)}
                     >
                       <img
-                        src={product.exactImage || product.frontImage || product.image}
+                        src={product.frontImage || product.image}
                         alt={product.name}
-                        className="w-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105"
+                        className="w-full object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)] transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
                     {/* Real Try-On Live Badge */}

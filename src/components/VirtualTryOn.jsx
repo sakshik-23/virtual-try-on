@@ -413,14 +413,25 @@ export function VirtualTryOn({
         const rightTempleSq = toSquareCoord(rightTemple);
         const leftTempleSq = toSquareCoord(leftTemple);
 
-        const dx = leftEyeSq.x - rightEyeSq.x;
-        const dy = leftEyeSq.y - rightEyeSq.y;
-        const ipdRatio = Math.hypot(dx, dy);
-        const tiltDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+        // In mirrored space, physical right eye is screen-right, physical left eye is screen-left
+        // Ensure vector goes from screen-left to screen-right for positive horizontal delta
+        const screenLeftEye = leftEyeSq.x < rightEyeSq.x ? leftEyeSq : rightEyeSq;
+        const screenRightEye = leftEyeSq.x < rightEyeSq.x ? rightEyeSq : leftEyeSq;
+
+        const dx = screenRightEye.x - screenLeftEye.x;
+        const dy = screenRightEye.y - screenLeftEye.y;
+        const ipdRatio = Math.max(0.12, Math.min(0.42, Math.hypot(dx, dy)));
+        const rawTilt = Math.atan2(dy, dx) * (180 / Math.PI);
+        const tiltDeg = Math.max(-10, Math.min(10, rawTilt));
         const faceSpanRatio = Math.abs(leftTempleSq.x - rightTempleSq.x);
 
+        // Center between eyes, resting naturally on nasal bridge
+        const pupilCenterX = (screenLeftEye.x + screenRightEye.x) / 2;
+        const pupilCenterY = (screenLeftEye.y + screenRightEye.y) / 2;
+        const opticalCenterY = pupilCenterY + ipdRatio * 0.10;
+
         metrics = {
-          noseBridge: { x: noseSq.x, y: noseSq.y },
+          noseBridge: { x: pupilCenterX, y: opticalCenterY },
           ipdRatio,
           faceSpanRatio,
           tiltDeg
