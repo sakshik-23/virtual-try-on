@@ -254,13 +254,17 @@ export function LiveLookModal({
             overlay.style.width = `${s.width.toFixed(2)}%`;
             overlay.style.transform = `translate(-50%, -50%) perspective(1200px) rotateY(${s.yaw.toFixed(2)}deg) rotateX(${(-s.pitch).toFixed(2)}deg) rotateZ(${(-s.roll).toFixed(2)}deg)`;
 
-            // Temple arms dynamically angle and reveal when looking left or right
+            // Update 3D temple arms (behind ear strands) to follow head yaw dynamically
             if (leftTemple) {
-              const leftOpacity = s.yaw < -3 ? Math.min(1, Math.abs(s.yaw) / 18) : 0;
+              const leftYaw = -72 - (s.yaw * 0.7);
+              const leftOpacity = Math.max(0.68, Math.min(1.0, 0.88 - (s.yaw * 0.015)));
+              leftTemple.style.transform = `rotateY(${leftYaw.toFixed(2)}deg) translateZ(-4px)`;
               leftTemple.style.opacity = leftOpacity.toFixed(2);
             }
             if (rightTemple) {
-              const rightOpacity = s.yaw > 3 ? Math.min(1, Math.abs(s.yaw) / 18) : 0;
+              const rightYaw = 72 - (s.yaw * 0.7);
+              const rightOpacity = Math.max(0.68, Math.min(1.0, 0.88 + (s.yaw * 0.015)));
+              rightTemple.style.transform = `rotateY(${rightYaw.toFixed(2)}deg) translateZ(-4px)`;
               rightTemple.style.opacity = rightOpacity.toFixed(2);
             }
 
@@ -409,25 +413,51 @@ export function LiveLookModal({
     const isTortoise = color?.id === 'tortoise' || (product.name && product.name.toLowerCase().includes('tortoise'));
     const isRoseGold = color?.id === 'rosegold' || colorHex.toLowerCase() === '#b76e79';
 
-    let gradient;
+    let startColor = '#18181b';
+    let midColor = '#27272a';
+    let endColor = '#09090b';
+    let accentColor = '#d4af37';
+    let thickness = 5.2;
+
     if (isRoseGold) {
-      gradient = 'linear-gradient(90deg, #b76e79, #e8b4b8, #8b4a52)';
+      startColor = '#b76e79';
+      midColor = '#f43f5e';
+      endColor = '#881337';
+      accentColor = '#fda4af';
+      thickness = 3.4;
     } else if (isTortoise) {
-      gradient = 'linear-gradient(90deg, #3d2314, #6e4325, #2b170c)';
-    } else if (isMetal) {
-      gradient = 'linear-gradient(90deg, #ffd700, #b8860b, #d4af37)';
+      startColor = '#45220c';
+      midColor = '#6b3714';
+      endColor = '#2e1405';
+      accentColor = '#d4af37';
+      thickness = 5.2;
+    } else if (isMetal || shape === 'aviator') {
+      startColor = '#ffd700';
+      midColor = '#fef08a';
+      endColor = '#b45309';
+      accentColor = '#ffd700';
+      thickness = 3.2;
+    } else if (shape === 'clubmaster') {
+      // Clubmaster browline: glossy black acetate temple with gold hinge rivet
+      startColor = '#111827';
+      midColor = '#1f2937';
+      endColor = '#030712';
+      accentColor = '#ffd700';
+      thickness = 5.2;
     } else if (colorHex === '#e2e8f0' || colorHex === '#ffffff') {
-      gradient = 'linear-gradient(90deg, rgba(226,232,240,0.85), rgba(255,255,255,0.95))';
-    } else {
-      gradient = `linear-gradient(90deg, ${colorHex}, #2d3748, #111827)`;
+      startColor = '#cbd5e1';
+      midColor = '#f8fafc';
+      endColor = '#94a3b8';
+      accentColor = '#e2e8f0';
+      thickness = 4.2;
     }
 
-    let hingeTopPct = 28;
-    if (shape === 'clubmaster' || shape === 'wayfarer') hingeTopPct = 24;
-    else if (shape === 'aviator') hingeTopPct = 32;
-    else if (shape === 'round') hingeTopPct = 30;
+    let hingeTopPct = 25;
+    if (shape === 'clubmaster' || shape === 'wayfarer') hingeTopPct = 23;
+    else if (shape === 'aviator') hingeTopPct = 30;
+    else if (shape === 'round') hingeTopPct = 28;
 
-    return { gradient, hingeTopPct, isMetal };
+    return { startColor, midColor, endColor, accentColor, thickness, hingeTopPct, isMetal };
   };
 
   const templeMeta = getTempleMeta(activeProduct, selectedColor);
@@ -518,41 +548,91 @@ export function LiveLookModal({
                   perspective: '1200px'
                 }}
               >
-                {/* 3D Left Temple Arm (Extends back into depth towards ear) */}
+                {/* Left 3D Temple Arm (Strand reaching back & hooking behind ear) */}
                 <div
                   ref={leftTempleRef}
-                  className="absolute origin-left rounded-r-full pointer-events-none"
+                  className="absolute origin-left pointer-events-none transition-all duration-100 z-0"
                   style={{
-                    left: '1%',
+                    left: '0.5%',
                     top: `${templeMeta.hingeTopPct}%`,
-                    width: '44%',
-                    height: templeMeta.isMetal ? '3px' : '5px',
-                    transform: 'rotateY(-86deg)',
+                    width: '64%',
+                    height: '38px',
+                    transform: 'rotateY(-72deg) translateZ(-4px)',
                     transformOrigin: 'left center',
-                    background: templeMeta.gradient,
-                    opacity: 0,
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                    transition: 'opacity 0.1s ease-out'
+                    opacity: 0.9,
+                    filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.45))'
                   }}
-                />
+                >
+                  <svg
+                    viewBox="0 0 150 38"
+                    className="w-full h-full overflow-visible"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <defs>
+                      <linearGradient id={`left-temple-grad-${activeProduct.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor={templeMeta.startColor} />
+                        <stop offset="45%" stopColor={templeMeta.midColor} />
+                        <stop offset="100%" stopColor={templeMeta.endColor} />
+                      </linearGradient>
+                    </defs>
+                    {/* Metal hinge joint barrel */}
+                    <rect x="0" y="2" width="5" height={templeMeta.thickness + 2} rx="1" fill={templeMeta.accentColor} />
+                    {/* Temple shaft with downward ergonomic ear hook */}
+                    <path
+                      d={`M 4 ${4 + templeMeta.thickness / 2} L 100 ${4 + templeMeta.thickness / 2} Q 125 ${4 + templeMeta.thickness / 2} 136 19 Q 144 29 148 34`}
+                      stroke={`url(#left-temple-grad-${activeProduct.id})`}
+                      strokeWidth={templeMeta.thickness}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    {/* Padded ear tip cushion */}
+                    <circle cx="148" cy="34" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
+                  </svg>
+                </div>
 
-                {/* 3D Right Temple Arm (Extends back into depth towards ear) */}
+                {/* Right 3D Temple Arm (Strand reaching back & hooking behind ear) */}
                 <div
                   ref={rightTempleRef}
-                  className="absolute origin-right rounded-l-full pointer-events-none"
+                  className="absolute origin-right pointer-events-none transition-all duration-100 z-0"
                   style={{
-                    right: '1%',
+                    right: '0.5%',
                     top: `${templeMeta.hingeTopPct}%`,
-                    width: '44%',
-                    height: templeMeta.isMetal ? '3px' : '5px',
-                    transform: 'rotateY(86deg)',
+                    width: '64%',
+                    height: '38px',
+                    transform: 'rotateY(72deg) translateZ(-4px)',
                     transformOrigin: 'right center',
-                    background: templeMeta.gradient,
-                    opacity: 0,
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                    transition: 'opacity 0.1s ease-out'
+                    opacity: 0.9,
+                    filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.45))'
                   }}
-                />
+                >
+                  <svg
+                    viewBox="0 0 150 38"
+                    className="w-full h-full overflow-visible"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <defs>
+                      <linearGradient id={`right-temple-grad-${activeProduct.id}`} x1="100%" y1="0%" x2="0%" y2="0%">
+                        <stop offset="0%" stopColor={templeMeta.startColor} />
+                        <stop offset="45%" stopColor={templeMeta.midColor} />
+                        <stop offset="100%" stopColor={templeMeta.endColor} />
+                      </linearGradient>
+                    </defs>
+                    {/* Metal hinge joint barrel */}
+                    <rect x="145" y="2" width="5" height={templeMeta.thickness + 2} rx="1" fill={templeMeta.accentColor} />
+                    {/* Temple shaft with downward ergonomic ear hook */}
+                    <path
+                      d={`M 146 ${4 + templeMeta.thickness / 2} L 50 ${4 + templeMeta.thickness / 2} Q 25 ${4 + templeMeta.thickness / 2} 14 19 Q 6 29 2 34`}
+                      stroke={`url(#right-temple-grad-${activeProduct.id})`}
+                      strokeWidth={templeMeta.thickness}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    {/* Padded ear tip cushion */}
+                    <circle cx="2" cy="34" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
+                  </svg>
+                </div>
 
                 {/* Eyewear Front Rim Cutout */}
                 <img
@@ -641,12 +721,70 @@ export function LiveLookModal({
                 {/* Static Spectacles Superimposition */}
                 <div
                   className="absolute pointer-events-none transition-all duration-200"
-                  style={getStaticFittingStyle(activeProduct)}
+                  style={{
+                    ...getStaticFittingStyle(activeProduct),
+                    transformStyle: 'preserve-3d',
+                    perspective: '1200px'
+                  }}
                 >
+                  {/* Left Temple Strand */}
+                  <div
+                    className="absolute origin-left pointer-events-none z-0"
+                    style={{
+                      left: '0.5%',
+                      top: `${templeMeta.hingeTopPct}%`,
+                      width: '64%',
+                      height: '38px',
+                      transform: 'rotateY(-72deg) translateZ(-4px)',
+                      transformOrigin: 'left center',
+                      opacity: 0.9,
+                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.45))'
+                    }}
+                  >
+                    <svg viewBox="0 0 150 38" className="w-full h-full overflow-visible" fill="none">
+                      <rect x="0" y="2" width="5" height={templeMeta.thickness + 2} rx="1" fill={templeMeta.accentColor} />
+                      <path
+                        d={`M 4 ${4 + templeMeta.thickness / 2} L 100 ${4 + templeMeta.thickness / 2} Q 125 ${4 + templeMeta.thickness / 2} 136 19 Q 144 29 148 34`}
+                        stroke={templeMeta.startColor}
+                        strokeWidth={templeMeta.thickness}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <circle cx="148" cy="34" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
+                    </svg>
+                  </div>
+
+                  {/* Right Temple Strand */}
+                  <div
+                    className="absolute origin-right pointer-events-none z-0"
+                    style={{
+                      right: '0.5%',
+                      top: `${templeMeta.hingeTopPct}%`,
+                      width: '64%',
+                      height: '38px',
+                      transform: 'rotateY(72deg) translateZ(-4px)',
+                      transformOrigin: 'right center',
+                      opacity: 0.9,
+                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.45))'
+                    }}
+                  >
+                    <svg viewBox="0 0 150 38" className="w-full h-full overflow-visible" fill="none">
+                      <rect x="145" y="2" width="5" height={templeMeta.thickness + 2} rx="1" fill={templeMeta.accentColor} />
+                      <path
+                        d={`M 146 ${4 + templeMeta.thickness / 2} L 50 ${4 + templeMeta.thickness / 2} Q 25 ${4 + templeMeta.thickness / 2} 14 19 Q 6 29 2 34`}
+                        stroke={templeMeta.startColor}
+                        strokeWidth={templeMeta.thickness}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <circle cx="2" cy="34" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
+                    </svg>
+                  </div>
+
                   <img
                     src={activeCutoutImage}
                     alt={activeProduct.name}
-                    className="w-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] transition-transform duration-200 animate-in fade-in zoom-in-95"
+                    className="w-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] transition-transform duration-200 animate-in fade-in zoom-in-95 relative z-10"
                   />
                 </div>
 
