@@ -124,6 +124,7 @@ export function UserProfileModal({
     setSignInEmail('');
     setSignInPassword('');
     setErrorMsg('');
+    if (onClose) onClose();
   };
 
   return (

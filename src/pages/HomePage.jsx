@@ -69,10 +69,7 @@ export function HomePage({
           {/* Right Hero: Interactive 3D Spectacles Three.js Showcase */}
           <div className="lg:col-span-6 relative">
             <div className="relative w-full rounded-3xl bg-gradient-to-b from-slate-50/80 to-slate-100/60 border border-slate-200/90 shadow-xl p-4 sm:p-6 overflow-hidden">
-              <HeroThreeSpectacles
-                onExploreFrames={() => navigate('/eyeglasses')}
-                onLaunchTryOn={() => onOpenLiveTryOn ? onOpenLiveTryOn(catalogProducts[0]) : navigate('/try-on')}
-              />
+              <HeroThreeSpectacles />
             </div>
           </div>
 

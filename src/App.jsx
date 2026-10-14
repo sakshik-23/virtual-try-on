@@ -76,17 +76,6 @@ export default function App() {
   const [isStyleQuizOpen, setIsStyleQuizOpen] = useState(false);
   const [liveLookProduct, setLiveLookProduct] = useState(null);
 
-  // Cart Drawer State
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState(() => {
-    try {
-      const saved = localStorage.getItem('spectra_tryon_cart');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
   // User Authentication State (defaults to null so user is prompted to sign in or register)
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -97,26 +86,104 @@ export default function App() {
     }
   });
 
+  // Cart Drawer State (tied to active user session - starts empty if logged out)
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('spectra_user');
+      if (!savedUser) {
+        localStorage.removeItem('spectra_tryon_cart');
+        return [];
+      }
+      const userObj = JSON.parse(savedUser);
+      const userKey = userObj.id || userObj.email;
+      const saved = localStorage.getItem(`spectra_cart_${userKey}`) || localStorage.getItem('spectra_tryon_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Wishlist Drawer State (tied to active user session - starts empty if logged out)
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [wishlistItems, setWishlistItems] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('spectra_user');
+      if (!savedUser) {
+        localStorage.removeItem('spectra_tryon_wishlist');
+        return [];
+      }
+      const userObj = JSON.parse(savedUser);
+      const userKey = userObj.id || userObj.email;
+      const saved = localStorage.getItem(`spectra_wishlist_${userKey}`) || localStorage.getItem('spectra_tryon_wishlist');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Session Manager: Handles Login, Registration, and Clean Logout
   const handleUpdateUser = (user) => {
     setCurrentUser(user);
     try {
       if (user) {
+        // User logged in: save session & load their personal cart/wishlist
         localStorage.setItem('spectra_user', JSON.stringify(user));
+        const userKey = user.id || user.email;
+        const savedCart = localStorage.getItem(`spectra_cart_${userKey}`);
+        const savedWishlist = localStorage.getItem(`spectra_wishlist_${userKey}`);
+        setCartItems(savedCart ? JSON.parse(savedCart) : []);
+        setWishlistItems(savedWishlist ? JSON.parse(savedWishlist) : []);
       } else {
+        // User logged out: clear cart, wishlist, close drawers, and return to Home landing page
         localStorage.removeItem('spectra_user');
+        localStorage.removeItem('spectra_tryon_cart');
+        localStorage.removeItem('spectra_tryon_wishlist');
+        setCartItems([]);
+        setWishlistItems([]);
+        setIsCartOpen(false);
+        setIsWishlistOpen(false);
+        setIsProfileOpen(false);
+        navigate('/');
       }
     } catch (e) {
-      console.warn('User storage error', e);
+      console.warn('User session storage error', e);
     }
   };
 
+  // Sync cart items to storage for logged in user
   useEffect(() => {
     try {
-      localStorage.setItem('spectra_tryon_cart', JSON.stringify(cartItems));
+      if (currentUser) {
+        const userKey = currentUser.id || currentUser.email;
+        localStorage.setItem(`spectra_cart_${userKey}`, JSON.stringify(cartItems));
+        localStorage.setItem('spectra_tryon_cart', JSON.stringify(cartItems));
+      } else {
+        if (cartItems.length === 0) {
+          localStorage.removeItem('spectra_tryon_cart');
+        }
+      }
     } catch (e) {
       console.warn('Cart storage error', e);
     }
-  }, [cartItems]);
+  }, [cartItems, currentUser]);
+
+  // Sync wishlist items to storage for logged in user
+  useEffect(() => {
+    try {
+      if (currentUser) {
+        const userKey = currentUser.id || currentUser.email;
+        localStorage.setItem(`spectra_wishlist_${userKey}`, JSON.stringify(wishlistItems));
+        localStorage.setItem('spectra_tryon_wishlist', JSON.stringify(wishlistItems));
+      } else {
+        if (wishlistItems.length === 0) {
+          localStorage.removeItem('spectra_tryon_wishlist');
+        }
+      }
+    } catch (e) {
+      console.warn('Wishlist storage error', e);
+    }
+  }, [wishlistItems, currentUser]);
 
   const handlePhotoCaptured = (photoUrl, metrics) => {
     setUserSelfie(photoUrl);
@@ -153,25 +220,6 @@ export default function App() {
     setCartItems(prev => [...prev, product || activeProduct]);
     setIsCartOpen(true);
   };
-
-  // Wishlist Drawer State
-  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
-  const [wishlistItems, setWishlistItems] = useState(() => {
-    try {
-      const saved = localStorage.getItem('spectra_tryon_wishlist');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('spectra_tryon_wishlist', JSON.stringify(wishlistItems));
-    } catch (e) {
-      console.warn('Wishlist storage error', e);
-    }
-  }, [wishlistItems]);
 
   const handleToggleWishlist = (product) => {
     setWishlistItems(prev => {

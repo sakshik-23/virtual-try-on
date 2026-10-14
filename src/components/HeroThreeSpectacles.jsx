@@ -3,51 +3,18 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Sparkles } from 'lucide-react';
 
-const PRESET_FRAMES = [
-  {
-    id: 'wayfarer',
-    name: 'Classic Wayfarer',
-    shape: 'wayfarer',
-    brand: 'Spectra Signature',
-    colorHex: '#1c1c1e',
-    frontImage: '/images/eyewear/front_wayfarer.png',
-    tag: 'Best Seller'
-  },
-  {
-    id: 'aviator',
-    name: 'Aviator Titanium Gold',
-    shape: 'aviator',
-    brand: 'Spectra Air',
-    colorHex: '#d4af37',
-    frontImage: '/images/eyewear/front_aviator.png',
-    tag: 'Ultra-Light'
-  },
-  {
-    id: 'round',
-    name: 'Minimalist Round Gold',
-    shape: 'round',
-    brand: 'Heritage Optics',
-    colorHex: '#b76e79',
-    frontImage: '/images/eyewear/front_round_gold.png',
-    tag: 'Vintage Luxe'
-  },
-  {
-    id: 'clubmaster',
-    name: 'Classic Browline',
-    shape: 'wayfarer',
-    brand: 'Retro Elegance',
-    colorHex: '#27272a',
-    frontImage: '/images/eyewear/front_clubmaster.png',
-    tag: 'Iconic Fit'
-  }
-];
+const CLASSIC_FRAME = {
+  id: 'classic-wayfarer',
+  name: 'Classic Wayfarer',
+  shape: 'wayfarer',
+  colorHex: '#18181b',
+  frontImage: '/images/eyewear/front_wayfarer.png'
+};
 
-export function HeroThreeSpectacles({ onExploreFrames, onLaunchTryOn }) {
+export function HeroThreeSpectacles() {
   const containerRef = useRef(null);
   const controlsRef = useRef(null);
   const glassesGroupRef = useRef(null);
-  const [selectedFrame, setSelectedFrame] = useState(PRESET_FRAMES[0]);
-  const [isRotating, setIsRotating] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -55,73 +22,67 @@ export function HeroThreeSpectacles({ onExploreFrames, onLaunchTryOn }) {
     if (!container) return;
 
     setIsLoading(true);
-    const width = container.clientWidth || 560;
-    const height = container.clientHeight || 420;
+    const width = container.clientWidth || 600;
+    const height = container.clientHeight || 460;
 
     // 1. Three.js Scene with Transparent Background
     const scene = new THREE.Scene();
 
-    // 2. Camera setup
-    const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
-    camera.position.set(0, 0.3, 3.8);
+    // 2. Camera setup - Positioned closer and angled to showcase full 3D frame prominently
+    const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 100);
+    camera.position.set(0, 0.2, 2.75);
 
     // 3. WebGL Renderer with High-End Tone Mapping & Transparent Canvas
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.2;
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
-    // 4. Orbit Controls with Smooth Damping
+    // 4. Smooth 360° Orbital Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
-    controls.autoRotate = isRotating;
-    controls.autoRotateSpeed = 2.4;
-    controls.maxDistance = 5.5;
-    controls.minDistance = 2.2;
-    controls.maxPolarAngle = Math.PI / 1.7; // Prevent looking too far underneath
-    controls.minPolarAngle = Math.PI / 4;   // Prevent looking directly top-down
-    controls.target.set(0, 0, -0.6);
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 2.0;
+    controls.maxDistance = 4.2;
+    controls.minDistance = 1.8;
+    controls.maxPolarAngle = Math.PI / 1.75;
+    controls.minPolarAngle = Math.PI / 4;
+    controls.target.set(0, 0, -0.55);
     controlsRef.current = controls;
 
-    // Stop auto-rotation when user manually interacts
-    controls.addEventListener('start', () => {
-      setIsRotating(false);
-      controls.autoRotate = false;
-    });
-
-    // 5. Studio Lighting Rig
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.8);
+    // 5. Studio Lighting Rig - Enhanced for crisp edge highlights and frame visibility
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.6);
     keyLight.position.set(4, 5, 4);
     scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0xf0f9ff, 1.5);
+    const fillLight = new THREE.DirectionalLight(0xf0f9ff, 1.8);
     fillLight.position.set(-4, 3, 3);
     scene.add(fillLight);
 
-    const topLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    const topLight = new THREE.DirectionalLight(0xffffff, 1.6);
     topLight.position.set(0, 5, 0);
     scene.add(topLight);
 
-    const rimLight = new THREE.DirectionalLight(0x00bac6, 0.8);
+    const rimLight = new THREE.DirectionalLight(0x00bac6, 1.0);
     rimLight.position.set(0, 3, -4);
     scene.add(rimLight);
 
-    // 6. Soft Studio Contact Shadow
-    const shadowGeom = new THREE.PlaneGeometry(4.2, 2.4);
+    // 6. Realistic Soft Contact Shadow Beneath Frame
+    const shadowGeom = new THREE.PlaneGeometry(4.6, 2.6);
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
     const ctx = canvas.getContext('2d');
     const grad = ctx.createRadialGradient(128, 128, 10, 128, 128, 120);
-    grad.addColorStop(0, 'rgba(0, 0, 40, 0.28)');
-    grad.addColorStop(0.5, 'rgba(0, 0, 40, 0.10)');
+    grad.addColorStop(0, 'rgba(0, 0, 40, 0.32)');
+    grad.addColorStop(0.5, 'rgba(0, 0, 40, 0.12)');
     grad.addColorStop(1, 'rgba(0, 0, 40, 0)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 256, 256);
@@ -134,7 +95,7 @@ export function HeroThreeSpectacles({ onExploreFrames, onLaunchTryOn }) {
     });
     const shadowMesh = new THREE.Mesh(shadowGeom, shadowMat);
     shadowMesh.rotation.x = -Math.PI / 2;
-    shadowMesh.position.set(0, -0.92, -0.6);
+    shadowMesh.position.set(0, -1.05, -0.55);
     scene.add(shadowMesh);
 
     // 7. Spectacles 3D Assembly Group
@@ -142,10 +103,10 @@ export function HeroThreeSpectacles({ onExploreFrames, onLaunchTryOn }) {
     scene.add(glassesGroup);
     glassesGroupRef.current = glassesGroup;
 
-    // Load Frame Texture
+    // Load Authentic Classic Wayfarer Texture
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(
-      selectedFrame.frontImage,
+      CLASSIC_FRAME.frontImage,
       (texture) => {
         texture.generateMipmaps = true;
         texture.minFilter = THREE.LinearMipmapLinearFilter;
@@ -156,16 +117,17 @@ export function HeroThreeSpectacles({ onExploreFrames, onLaunchTryOn }) {
         const imgH = texture.image?.height || 320;
         const aspect = imgW / imgH;
 
-        const frameHeight = 1.0;
+        // Enlarged frame dimensions for maximum visibility & impact
+        const frameHeight = 1.25;
         const frameWidth = frameHeight * aspect;
 
-        buildAuthentic3DGlasses(glassesGroup, selectedFrame, texture, frameWidth, frameHeight);
+        buildClassic3DGlasses(glassesGroup, texture, frameWidth, frameHeight);
         setIsLoading(false);
       },
       undefined,
       (err) => {
         console.warn('Fallback glasses rendering:', err);
-        buildAuthentic3DGlasses(glassesGroup, selectedFrame, null, 2.6, 1.0);
+        buildClassic3DGlasses(glassesGroup, null, 3.1, 1.25);
         setIsLoading(false);
       }
     );
@@ -178,9 +140,9 @@ export function HeroThreeSpectacles({ onExploreFrames, onLaunchTryOn }) {
       animId = requestAnimationFrame(animate);
       const elapsed = clock.getElapsedTime();
 
-      // Gentle floating oscillation
+      // Subtle gentle floating oscillation
       if (glassesGroupRef.current) {
-        glassesGroupRef.current.position.y = Math.sin(elapsed * 1.5) * 0.04;
+        glassesGroupRef.current.position.y = Math.sin(elapsed * 1.4) * 0.04;
       }
 
       controls.update();
@@ -191,8 +153,8 @@ export function HeroThreeSpectacles({ onExploreFrames, onLaunchTryOn }) {
     // 9. Resize Listener
     const handleResize = () => {
       if (!container) return;
-      const w = container.clientWidth || 560;
-      const h = container.clientHeight || 420;
+      const w = container.clientWidth || 600;
+      const h = container.clientHeight || 460;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
@@ -208,15 +170,14 @@ export function HeroThreeSpectacles({ onExploreFrames, onLaunchTryOn }) {
         renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
     };
-  }, [selectedFrame]);
-
+  }, []);
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center">
-      {/* 3D WebGL Canvas Viewport */}
+      {/* 3D WebGL Canvas Viewport - Spacious, responsive & prominent */}
       <div
         ref={containerRef}
-        className="w-full h-[380px] sm:h-[440px] lg:h-[480px] cursor-grab active:cursor-grabbing select-none"
+        className="w-full h-[400px] sm:h-[460px] lg:h-[500px] cursor-grab active:cursor-grabbing select-none"
       />
 
       {/* Loading Overlay */}
@@ -224,58 +185,29 @@ export function HeroThreeSpectacles({ onExploreFrames, onLaunchTryOn }) {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-md rounded-full border border-slate-200 shadow-lg text-xs font-semibold text-slate-700">
             <Sparkles className="w-4 h-4 text-[#00bac6] animate-spin" />
-            <span>Generating 3D Spectacles...</span>
+            <span>Rendering 3D Spectacles...</span>
           </div>
         </div>
       )}
-
-
-
-      {/* Frame Switcher Bar Under Canvas */}
-      <div className="w-full max-w-md mt-2 flex items-center justify-center gap-2 px-3 py-1.5 bg-slate-50/90 rounded-2xl border border-slate-200/80">
-        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1">
-          Select 3D Model:
-        </span>
-        {PRESET_FRAMES.map((frame) => {
-          const isSelected = selectedFrame.id === frame.id;
-          return (
-            <button
-              key={frame.id}
-              onClick={() => setSelectedFrame(frame)}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                isSelected
-                  ? 'bg-white text-[#000042] shadow-sm border border-slate-200 ring-2 ring-[#00bac6]/40'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-              }`}
-            >
-              {frame.name.split(' ')[0]}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }
 
 /**
- * Builds the authentic 3D spectacles mesh with:
- * - Front frame textured with photographic cutout
- * - Dual-layer depth for realistic rim thickness
- * - Real 3D temple arms extending backward with ear hooks
- * - Silicone nose pads and metal bridge
- * - Specular optical lenses
+ * Builds the prominent Classic Wayfarer 3D Model:
+ * - High-resolution front acetate frame
+ * - Realistic physical thickness backing
+ * - 3D Temple arms traveling backward along -Z with contoured ear hooks
+ * - Anti-reflective optical lenses with refractive specular gloss
  */
-function buildAuthentic3DGlasses(group, frameData, texture, frameWidth, frameHeight) {
-  // Clear previous children
+function buildClassic3DGlasses(group, texture, frameWidth, frameHeight) {
   while (group.children.length > 0) {
     const obj = group.children[0];
     group.remove(obj);
     if (obj.geometry) obj.geometry.dispose();
   }
 
-  const isAviator = frameData.shape === 'aviator';
-  const isMetal = frameData.shape === 'round' || isAviator;
-  const frameColorHex = frameData.colorHex || '#1c1c1e';
+  const frameColorHex = '#18181b';
 
   // Front Frame Plane
   const frontGeom = new THREE.PlaneGeometry(frameWidth, frameHeight);
@@ -284,8 +216,8 @@ function buildAuthentic3DGlasses(group, frameData, texture, frameWidth, frameHei
     transparent: true,
     alphaTest: 0.08,
     depthWrite: true,
-    roughness: isMetal ? 0.28 : 0.32,
-    metalness: isMetal ? 0.75 : 0.08,
+    roughness: 0.25,
+    metalness: 0.12,
     side: THREE.DoubleSide
   });
 
@@ -293,19 +225,19 @@ function buildAuthentic3DGlasses(group, frameData, texture, frameWidth, frameHei
   const frontMesh = new THREE.Mesh(frontGeom, frontMat);
   group.add(frontMesh);
 
-  // Layer 2: Subtle depth backing
+  // Layer 2: Subtle depth backing for physical rim thickness
   const backMesh = new THREE.Mesh(frontGeom, frontMat);
-  backMesh.position.set(0, 0, -0.015);
+  backMesh.position.set(0, 0, -0.018);
   group.add(backMesh);
 
-  // 3D Optical Lenses (Crystal Clear with subtle refractive specular reflections)
-  const lensWidth = (frameWidth * 0.42);
-  const lensHeight = (frameHeight * 0.82);
+  // 3D Optical Lenses (Crystal Clear with subtle specular reflections)
+  const lensWidth = frameWidth * 0.42;
+  const lensHeight = frameHeight * 0.82;
   const lensGeom = new THREE.PlaneGeometry(lensWidth, lensHeight, 8, 8);
   const lensMat = new THREE.MeshPhysicalMaterial({
     color: new THREE.Color(0xf0f9ff),
     transparent: true,
-    opacity: 0.18,
+    opacity: 0.16,
     roughness: 0.05,
     metalness: 0.1,
     transmission: 0.95,
@@ -324,14 +256,14 @@ function buildAuthentic3DGlasses(group, frameData, texture, frameWidth, frameHei
   // 3D Temple Arms (Left & Right extending along -Z)
   const templeMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(frameColorHex),
-    metalness: isMetal ? 0.85 : 0.12,
-    roughness: isMetal ? 0.2 : 0.28
+    metalness: 0.12,
+    roughness: 0.24
   });
 
   const earTipMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(isMetal ? '#18181b' : frameColorHex),
+    color: new THREE.Color('#101012'),
     metalness: 0.1,
-    roughness: 0.35
+    roughness: 0.32
   });
 
   const hingeX = frameWidth * 0.475;
@@ -342,33 +274,24 @@ function buildAuthentic3DGlasses(group, frameData, texture, frameWidth, frameHei
     const sign = isLeft ? -1 : 1;
 
     // Hinge cylinder
-    const hingeGeom = new THREE.CylinderGeometry(0.024, 0.024, 0.08, 16);
+    const hingeGeom = new THREE.CylinderGeometry(0.026, 0.026, 0.08, 16);
     const hinge = new THREE.Mesh(hingeGeom, templeMat);
     hinge.position.set(sign * hingeX, hingeY, -0.02);
     group.add(hinge);
 
     // Main temple shaft traveling backward along -Z
-    const shaftLength = 2.15;
-    const shaftGeom = new THREE.BoxGeometry(0.025, 0.045, shaftLength);
+    const shaftLength = 2.25;
+    const shaftGeom = new THREE.BoxGeometry(0.028, 0.048, shaftLength);
     const shaft = new THREE.Mesh(shaftGeom, templeMat);
     shaft.position.set(sign * (hingeX - 0.01), hingeY - 0.01, -shaftLength / 2);
     group.add(shaft);
 
     // Ergonomic downward ear hook curve
-    const hookLength = 0.55;
-    const hookGeom = new THREE.BoxGeometry(0.025, 0.042, hookLength);
+    const hookLength = 0.58;
+    const hookGeom = new THREE.BoxGeometry(0.028, 0.044, hookLength);
     const hook = new THREE.Mesh(hookGeom, earTipMat);
-    hook.position.set(sign * (hingeX - 0.01), hingeY - 0.16, -shaftLength - 0.18);
-    hook.rotation.x = 0.55; // Angle downward over the ear
+    hook.position.set(sign * (hingeX - 0.01), hingeY - 0.17, -shaftLength - 0.19);
+    hook.rotation.x = 0.55;
     group.add(hook);
   });
-
-  // Nose Bridge for metal / aviators
-  if (isMetal) {
-    const bridgeGeom = new THREE.CylinderGeometry(0.015, 0.015, frameWidth * 0.18, 12);
-    const bridgeMesh = new THREE.Mesh(bridgeGeom, templeMat);
-    bridgeMesh.rotation.z = Math.PI / 2;
-    bridgeMesh.position.set(0, frameHeight * 0.15, -0.01);
-    group.add(bridgeMesh);
-  }
 }
