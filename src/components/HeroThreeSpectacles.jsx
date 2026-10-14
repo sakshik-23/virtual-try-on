@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RotateCw, Sparkles, Layers, Eye } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 const PRESET_FRAMES = [
   {
@@ -210,24 +210,6 @@ export function HeroThreeSpectacles({ onExploreFrames, onLaunchTryOn }) {
     };
   }, [selectedFrame]);
 
-  // Handle Toggle Auto-Rotate
-  const handleToggleRotate = () => {
-    if (controlsRef.current) {
-      const nextState = !isRotating;
-      setIsRotating(nextState);
-      controlsRef.current.autoRotate = nextState;
-    }
-  };
-
-  // Reset Camera View
-  const handleReset = () => {
-    if (controlsRef.current) {
-      controlsRef.current.reset();
-      controlsRef.current.target.set(0, 0, -0.6);
-      setIsRotating(true);
-      controlsRef.current.autoRotate = true;
-    }
-  };
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center">
@@ -247,66 +229,7 @@ export function HeroThreeSpectacles({ onExploreFrames, onLaunchTryOn }) {
         </div>
       )}
 
-      {/* Floating HUD Badges around the 3D Spectacles */}
-      {/* Top Left Badge */}
-      <div className="hidden sm:flex absolute top-4 left-4 lg:left-8 bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-slate-200/80 shadow-md items-center gap-2.5 text-left pointer-events-none animate-in fade-in slide-in-from-left duration-300">
-        <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#000042] flex items-center justify-center font-bold text-xs">
-          3D
-        </div>
-        <div>
-          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
-            Three.js Engine
-          </span>
-          <span className="text-xs font-bold text-slate-800">
-            Real-Time PBR Shading
-          </span>
-        </div>
-      </div>
 
-      {/* Top Right Badge */}
-      <div className="hidden sm:flex absolute top-4 right-4 lg:right-8 bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-slate-200/80 shadow-md items-center gap-2.5 text-left pointer-events-none animate-in fade-in slide-in-from-right duration-300">
-        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">
-          1:1
-        </div>
-        <div>
-          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
-            True Scale
-          </span>
-          <span className="text-xs font-bold text-slate-800">
-            Millimeter Fit Accuracy
-          </span>
-        </div>
-      </div>
-
-      {/* Bottom Center Interaction Controls */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full border border-slate-200 shadow-xl z-20">
-        <button
-          onClick={handleToggleRotate}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-            isRotating
-              ? 'bg-[#000042] text-white'
-              : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-          }`}
-          title="Toggle 360 Auto-Rotation"
-        >
-          <RotateCw className={`w-3.5 h-3.5 ${isRotating ? 'animate-spin' : ''}`} />
-          <span>{isRotating ? 'Rotating 360°' : 'Rotate'}</span>
-        </button>
-
-        <button
-          onClick={handleReset}
-          className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer"
-          title="Reset View"
-        >
-          Reset View
-        </button>
-
-        <div className="h-4 w-px bg-slate-200 mx-1" />
-
-        <span className="text-[11px] text-slate-400 font-medium hidden md:inline">
-          Drag to inspect from any angle
-        </span>
-      </div>
 
       {/* Frame Switcher Bar Under Canvas */}
       <div className="w-full max-w-md mt-2 flex items-center justify-center gap-2 px-3 py-1.5 bg-slate-50/90 rounded-2xl border border-slate-200/80">

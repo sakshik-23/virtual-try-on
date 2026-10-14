@@ -5,14 +5,7 @@ import {
   Glasses, 
   Camera, 
   Rotate3d, 
-  ShoppingBag, 
-  ArrowRight, 
-  CheckCircle2, 
-  Sliders, 
-  ShieldCheck, 
-  Compass,
-  Eye,
-  Maximize2
+  ArrowRight
 } from 'lucide-react';
 import { HeroThreeSpectacles } from '../components/HeroThreeSpectacles';
 
@@ -69,31 +62,6 @@ export function HomePage({
                 <span>Launch Live 3D Try-On</span>
               </button>
 
-              {onOpenStyleQuiz && (
-                <button
-                  onClick={onOpenStyleQuiz}
-                  className="px-4 py-3 rounded-full text-slate-600 hover:text-slate-900 text-xs font-semibold hover:bg-slate-50 transition-all flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Compass className="w-4 h-4 text-[#00bac6]" />
-                  <span>AI Style Matcher</span>
-                </button>
-              )}
-            </div>
-
-            {/* Key Trust Badges */}
-            <div className="pt-4 grid grid-cols-3 gap-3 border-t border-slate-100 max-w-lg">
-              <div>
-                <span className="block text-base sm:text-lg font-bold text-slate-900 font-serif">1:1 Fit</span>
-                <span className="text-[11px] text-slate-500 font-medium">Millimeter Scaling</span>
-              </div>
-              <div>
-                <span className="block text-base sm:text-lg font-bold text-slate-900 font-serif">478 Points</span>
-                <span className="text-[11px] text-slate-500 font-medium">Face Mesh Tracking</span>
-              </div>
-              <div>
-                <span className="block text-base sm:text-lg font-bold text-slate-900 font-serif">360° WebGL</span>
-                <span className="text-[11px] text-slate-500 font-medium">Interactive Three.js</span>
-              </div>
             </div>
           </div>
 
@@ -293,43 +261,6 @@ export function HomePage({
             </div>
           ))}
         </div>
-      </section>
-
-      {/* ================= 4. PROJECT MISSION / FOOTER CTA ================= */}
-      <section className="bg-[#000042] text-white py-16 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
-        <div className="max-w-3xl mx-auto space-y-6 relative z-10">
-          <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mx-auto text-[#00bac6]">
-            <Glasses className="w-6 h-6" />
-          </div>
-
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight">
-            Ready to find your signature look?
-          </h2>
-
-          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl mx-auto">
-            Zero plugins or apps required. Simply allow your camera or browse our complete collection to experience 3D virtual try-on on any desktop or mobile device.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-            <Link
-              to="/eyeglasses"
-              className="px-6 py-3 rounded-full bg-white text-[#000042] font-bold text-xs sm:text-sm hover:bg-slate-100 transition-all shadow-lg"
-            >
-              Browse Full Catalog
-            </Link>
-
-            <button
-              onClick={() => onOpenLiveTryOn ? onOpenLiveTryOn(catalogProducts[0]) : navigate('/try-on')}
-              className="px-6 py-3 rounded-full bg-[#00bac6] text-white font-bold text-xs sm:text-sm hover:bg-[#00a2ad] transition-all shadow-lg flex items-center gap-2 cursor-pointer"
-            >
-              <Camera className="w-4 h-4" />
-              <span>Launch AR Camera</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Ambient Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#00bac6]/10 blur-3xl rounded-full pointer-events-none" />
       </section>
 
     </div>
