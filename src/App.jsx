@@ -86,6 +86,29 @@ export default function App() {
     }
   });
 
+  // User Authentication State (defaults to null so user is prompted to sign in or register)
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('spectra_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const handleUpdateUser = (user) => {
+    setCurrentUser(user);
+    try {
+      if (user) {
+        localStorage.setItem('spectra_user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('spectra_user');
+      }
+    } catch (e) {
+      console.warn('User storage error', e);
+    }
+  };
+
   useEffect(() => {
     try {
       localStorage.setItem('spectra_tryon_cart', JSON.stringify(cartItems));
@@ -182,6 +205,7 @@ export default function App() {
         onOpenWishlist={() => setIsWishlistOpen(true)}
         onOpenProfile={() => setIsProfileOpen(true)}
         onOpenStyleQuiz={() => setIsStyleQuizOpen(true)}
+        currentUser={currentUser}
       />
 
       {/* 2. Main Content Managed by React Router */}
@@ -381,6 +405,8 @@ export default function App() {
       <UserProfileModal
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
+        currentUser={currentUser}
+        onUpdateUser={handleUpdateUser}
         userSelfie={userSelfie}
         faceMetrics={faceMetrics}
         onOpenTryOn={() => {

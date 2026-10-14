@@ -8,7 +8,8 @@ export function Navbar({
   onOpenCart,
   onOpenWishlist,
   onOpenProfile,
-  onOpenStyleQuiz
+  onOpenStyleQuiz,
+  currentUser = null
 }) {
   return (
     <header className="sticky top-0 z-40 w-full bg-white border-b border-slate-200">
@@ -116,13 +117,29 @@ export function Navbar({
             )}
           </button>
 
-          {/* User Account Profile */}
+          {/* User Account Profile / Sign In */}
           <button
             onClick={onOpenProfile}
-            aria-label="View User Profile"
-            className="p-2 text-slate-700 hover:text-[#000042] transition-colors cursor-pointer rounded-full hover:bg-slate-100 hidden sm:block"
+            aria-label={currentUser ? `Profile of ${currentUser.name}` : "Sign In or Register"}
+            className="flex items-center gap-1.5 p-1 sm:p-1.5 text-slate-700 hover:text-[#000042] transition-all cursor-pointer rounded-full hover:bg-slate-100 hidden sm:flex"
           >
-            <User className="w-5 h-5" />
+            {currentUser ? (
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#000042] text-white text-xs font-bold flex items-center justify-center shadow-sm">
+                  {currentUser.initials || currentUser.name.slice(0, 2).toUpperCase()}
+                </div>
+                <span className="text-xs font-bold text-slate-800 hidden md:inline max-w-[100px] truncate">
+                  {currentUser.name.split(' ')[0]}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 hover:border-[#000042] hover:bg-slate-50 transition-all">
+                <User className="w-4 h-4 text-slate-600" />
+                <span className="text-xs font-bold text-slate-700">
+                  Sign In
+                </span>
+              </div>
+            )}
           </button>
         </div>
       </div>
