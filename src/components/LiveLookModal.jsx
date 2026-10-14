@@ -70,11 +70,8 @@ export function LiveLookModal({
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   const specsOverlayRef = useRef(null);
-  const templesSvgRef = useRef(null);
-  const leftTemplePathRef = useRef(null);
-  const rightTemplePathRef = useRef(null);
-  const leftTipCircleRef = useRef(null);
-  const rightTipCircleRef = useRef(null);
+  const leftTempleRef = useRef(null);
+  const rightTempleRef = useRef(null);
 
   const streamRef = useRef(null);
   const landmarkerRef = useRef(null);
@@ -175,11 +172,8 @@ export function LiveLookModal({
       const video = videoRef.current;
       const container = containerRef.current;
       const overlay = specsOverlayRef.current;
-      const templesSvg = templesSvgRef.current;
-      const leftTemplePath = leftTemplePathRef.current;
-      const rightTemplePath = rightTemplePathRef.current;
-      const leftTipCircle = leftTipCircleRef.current;
-      const rightTipCircle = rightTipCircleRef.current;
+      const leftTemple = leftTempleRef.current;
+      const rightTemple = rightTempleRef.current;
       const landmarker = landmarkerRef.current;
 
       if (!video || !container || !overlay || video.readyState < 2) return;
@@ -260,81 +254,22 @@ export function LiveLookModal({
             overlay.style.width = `${s.width.toFixed(2)}%`;
             overlay.style.transform = `translate(-50%, -50%) rotateY(${s.yaw.toFixed(2)}deg) rotateX(${(-s.pitch).toFixed(2)}deg) rotateZ(${(-s.roll).toFixed(2)}deg)`;
 
-            // Natural Anatomical Temple Strands (pinned directly from frame hinges to user's real ears)
-            const overlayPixelW = (s.width / 100) * containerW;
-            const overlayPixelH = overlayPixelW * 0.42;
-            const overlayPixelX = (s.x / 100) * containerW;
-            const overlayPixelY = (s.y / 100) * containerH;
-
-            // Frame hinges accounting for head tilt (roll)
-            const rollRad = (s.roll * Math.PI) / 180;
-            const cosR = Math.cos(rollRad);
-            const sinR = Math.sin(rollRad);
-            const halfW = overlayPixelW * 0.485;
-            const hingeOffsetY = overlayPixelH * (templeMeta.hingeTopPct / 100 - 0.5);
-
-            const hingeLX = overlayPixelX - halfW * cosR + hingeOffsetY * sinR;
-            const hingeLY = overlayPixelY - halfW * sinR - hingeOffsetY * cosR;
-            const hingeRX = overlayPixelX + halfW * cosR + hingeOffsetY * sinR;
-            const hingeRY = overlayPixelY + halfW * sinR - hingeOffsetY * cosR;
-
-            // MediaPipe ear landmarks on user's real head (127/234 = screen-left ear, 356/454 = screen-right ear)
-            const earL_lm = landmarks[127] || landmarks[234] || landmarks[139];
-            const earR_lm = landmarks[356] || landmarks[454] || landmarks[368];
-            const rawEarLX = offsetX + ((1 - earL_lm.x) * videoW) * scale;
-            const rawEarLY = offsetY + (earL_lm.y * videoH) * scale;
-            const rawEarRX = offsetX + ((1 - earR_lm.x) * videoW) * scale;
-            const rawEarRY = offsetY + (earR_lm.y * videoH) * scale;
-
-            // Ensure strands extend anatomically toward ears, never sticking into room
-            const earLX = Math.min(hingeLX - 2, rawEarLX);
-            const earLY = rawEarLY;
-            const earRX = Math.max(hingeRX + 2, rawEarRX);
-            const earRY = rawEarRY;
-
-            // Left temple arm path: frame hinge -> over top of ear -> curve behind ear
-            const earHookLX = earLX - 5;
-            const earHookLY = earLY + 18;
-            const midLX = (hingeLX + earLX) / 2;
-            const midLY = (hingeLY + earLY) / 2 - 2;
-            const pathL = `M ${hingeLX.toFixed(1)} ${hingeLY.toFixed(1)} Q ${midLX.toFixed(1)} ${midLY.toFixed(1)} ${earLX.toFixed(1)} ${earLY.toFixed(1)} Q ${(earLX - 3).toFixed(1)} ${(earLY + 10).toFixed(1)} ${earHookLX.toFixed(1)} ${earHookLY.toFixed(1)}`;
-
-            // Right temple arm path: frame hinge -> over top of ear -> curve behind ear
-            const earHookRX = earRX + 5;
-            const earHookRY = earRY + 18;
-            const midRX = (hingeRX + earRX) / 2;
-            const midRY = (hingeRY + earRY) / 2 - 2;
-            const pathR = `M ${hingeRX.toFixed(1)} ${hingeRY.toFixed(1)} Q ${midRX.toFixed(1)} ${midRY.toFixed(1)} ${earRX.toFixed(1)} ${earRY.toFixed(1)} Q ${(earRX + 3).toFixed(1)} ${(earRY + 10).toFixed(1)} ${earHookRX.toFixed(1)} ${earHookRY.toFixed(1)}`;
-
-            // Perspective opacity: near side reveals up to 1.0 when turned; far side fades out behind head
-            let leftOpacity = 0.55 + (s.yaw / 18.0);
-            let rightOpacity = 0.55 - (s.yaw / 18.0);
-            leftOpacity = Math.max(0.0, Math.min(1.0, leftOpacity));
-            rightOpacity = Math.max(0.0, Math.min(1.0, rightOpacity));
-
-            if (templesSvg) templesSvg.style.opacity = '1';
-            if (leftTemplePath) {
-              leftTemplePath.setAttribute('d', pathL);
-              leftTemplePath.style.opacity = leftOpacity.toFixed(2);
+            // 3D Temple arms attached firmly to frame hinges
+            // When facing front: tucked flush against temples into -Z depth (subtle natural look)
+            // When turning head: visible profile reveals temple arm extending back to ear; far side turns behind head
+            if (leftTemple) {
+              const leftOpacity = Math.max(0.0, Math.min(1.0, 0.15 + (s.yaw / 14.0)));
+              leftTemple.style.transform = `rotateY(88deg) translateZ(-2px)`;
+              leftTemple.style.opacity = leftOpacity.toFixed(2);
             }
-            if (rightTemplePath) {
-              rightTemplePath.setAttribute('d', pathR);
-              rightTemplePath.style.opacity = rightOpacity.toFixed(2);
-            }
-            if (leftTipCircle) {
-              leftTipCircle.setAttribute('cx', earHookLX.toFixed(1));
-              leftTipCircle.setAttribute('cy', earHookLY.toFixed(1));
-              leftTipCircle.style.opacity = leftOpacity.toFixed(2);
-            }
-            if (rightTipCircle) {
-              rightTipCircle.setAttribute('cx', earHookRX.toFixed(1));
-              rightTipCircle.setAttribute('cy', earHookRY.toFixed(1));
-              rightTipCircle.style.opacity = rightOpacity.toFixed(2);
+            if (rightTemple) {
+              const rightOpacity = Math.max(0.0, Math.min(1.0, 0.15 - (s.yaw / 14.0)));
+              rightTemple.style.transform = `rotateY(-88deg) translateZ(-2px)`;
+              rightTemple.style.opacity = rightOpacity.toFixed(2);
             }
 
             setIsFaceDetected(true);
           } else {
-            if (templesSvg) templesSvg.style.opacity = '0';
             setIsFaceDetected(false);
           }
         } catch (e) {
@@ -601,64 +536,6 @@ export function LiveLookModal({
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
 
-              {/* Anatomical Ear Strands SVG Layer (Z-8: Behind Front Frame, directly on ears) */}
-              <svg
-                ref={templesSvgRef}
-                className="absolute inset-0 w-full h-full pointer-events-none z-[8] overflow-visible transition-opacity duration-150"
-                style={{ opacity: 0 }}
-              >
-                <defs>
-                  <linearGradient id={`left-temple-grad-${activeProduct.id}`} x1="100%" y1="0%" x2="0%" y2="0%">
-                    <stop offset="0%" stopColor={templeMeta.startColor} />
-                    <stop offset="45%" stopColor={templeMeta.midColor} />
-                    <stop offset="100%" stopColor={templeMeta.endColor} />
-                  </linearGradient>
-                  <linearGradient id={`right-temple-grad-${activeProduct.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor={templeMeta.startColor} />
-                    <stop offset="45%" stopColor={templeMeta.midColor} />
-                    <stop offset="100%" stopColor={templeMeta.endColor} />
-                  </linearGradient>
-                </defs>
-
-                {/* Left Temple Strand: frame hinge -> ear -> behind ear */}
-                <path
-                  ref={leftTemplePathRef}
-                  d=""
-                  fill="none"
-                  stroke={`url(#left-temple-grad-${activeProduct.id})`}
-                  strokeWidth={templeMeta.thickness}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.45))' }}
-                />
-                <circle
-                  ref={leftTipCircleRef}
-                  cx="0"
-                  cy="0"
-                  r={templeMeta.thickness / 2 + 0.5}
-                  fill={templeMeta.endColor}
-                />
-
-                {/* Right Temple Strand: frame hinge -> ear -> behind ear */}
-                <path
-                  ref={rightTemplePathRef}
-                  d=""
-                  fill="none"
-                  stroke={`url(#right-temple-grad-${activeProduct.id})`}
-                  strokeWidth={templeMeta.thickness}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.45))' }}
-                />
-                <circle
-                  ref={rightTipCircleRef}
-                  cx="0"
-                  cy="0"
-                  r={templeMeta.thickness / 2 + 0.5}
-                  fill={templeMeta.endColor}
-                />
-              </svg>
-
               {/* 3D Real-Time Eyewear Superimposition Overlay */}
               <div
                 ref={specsOverlayRef}
@@ -671,6 +548,78 @@ export function LiveLookModal({
                   transformStyle: 'preserve-3d'
                 }}
               >
+                {/* Left 3D Temple Arm (firmly attached to frame left hinge) */}
+                <div
+                  ref={leftTempleRef}
+                  className="absolute pointer-events-none transition-opacity duration-150 z-0"
+                  style={{
+                    left: '0.5%',
+                    top: `${templeMeta.hingeTopPct}%`,
+                    width: '58%',
+                    height: '30px',
+                    transform: 'rotateY(88deg) translateZ(-2px)',
+                    transformOrigin: 'left center',
+                    opacity: 0.15,
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.45))'
+                  }}
+                >
+                  <svg viewBox="0 0 150 30" className="w-full h-full overflow-visible" fill="none">
+                    <defs>
+                      <linearGradient id={`left-temple-grad-${activeProduct.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor={templeMeta.accentColor} />
+                        <stop offset="20%" stopColor={templeMeta.startColor} />
+                        <stop offset="70%" stopColor={templeMeta.midColor} />
+                        <stop offset="100%" stopColor={templeMeta.endColor} />
+                      </linearGradient>
+                    </defs>
+                    <rect x="0" y="2" width="6" height={templeMeta.thickness + 2} rx="1.5" fill={templeMeta.accentColor} />
+                    <path
+                      d={`M 4 ${3 + templeMeta.thickness / 2} L 110 ${3 + templeMeta.thickness / 2} Q 130 ${3 + templeMeta.thickness / 2} 140 15 Q 146 22 148 27`}
+                      stroke={`url(#left-temple-grad-${activeProduct.id})`}
+                      strokeWidth={templeMeta.thickness}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="148" cy="27" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
+                  </svg>
+                </div>
+
+                {/* Right 3D Temple Arm (firmly attached to frame right hinge) */}
+                <div
+                  ref={rightTempleRef}
+                  className="absolute pointer-events-none transition-opacity duration-150 z-0"
+                  style={{
+                    right: '0.5%',
+                    top: `${templeMeta.hingeTopPct}%`,
+                    width: '58%',
+                    height: '30px',
+                    transform: 'rotateY(-88deg) translateZ(-2px)',
+                    transformOrigin: 'right center',
+                    opacity: 0.15,
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.45))'
+                  }}
+                >
+                  <svg viewBox="0 0 150 30" className="w-full h-full overflow-visible" fill="none">
+                    <defs>
+                      <linearGradient id={`right-temple-grad-${activeProduct.id}`} x1="100%" y1="0%" x2="0%" y2="0%">
+                        <stop offset="0%" stopColor={templeMeta.accentColor} />
+                        <stop offset="20%" stopColor={templeMeta.startColor} />
+                        <stop offset="70%" stopColor={templeMeta.midColor} />
+                        <stop offset="100%" stopColor={templeMeta.endColor} />
+                      </linearGradient>
+                    </defs>
+                    <rect x="144" y="2" width="6" height={templeMeta.thickness + 2} rx="1.5" fill={templeMeta.accentColor} />
+                    <path
+                      d={`M 146 ${3 + templeMeta.thickness / 2} L 40 ${3 + templeMeta.thickness / 2} Q 20 ${3 + templeMeta.thickness / 2} 10 15 Q 4 22 2 27`}
+                      stroke={`url(#right-temple-grad-${activeProduct.id})`}
+                      strokeWidth={templeMeta.thickness}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="2" cy="27" r={templeMeta.thickness / 2 + 0.5} fill={templeMeta.endColor} />
+                  </svg>
+                </div>
+
                 {/* Eyewear Front Rim Cutout */}
                 <img
                   src={activeCutoutImage}
