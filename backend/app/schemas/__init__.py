@@ -5,6 +5,7 @@ from .tryon import (
     OrderCreate,
     OrderResponse
 )
+from .user import UserRegisterRequest, UserLoginRequest, UserResponse
 
 __all__ = [
     "ProductBase",
@@ -14,4 +15,7 @@ __all__ = [
     "FaceProfileResponse",
     "OrderCreate",
     "OrderResponse",
+    "UserRegisterRequest",
+    "UserLoginRequest",
+    "UserResponse"
 ]

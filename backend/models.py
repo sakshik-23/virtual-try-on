@@ -77,3 +77,19 @@ class Order(Base):
     order_items = Column(JSON, nullable=False)
     status = Column(String(50), default="CONFIRMED")
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class User(Base):
+    """
+    User Account Model
+    Stores registered user profile and salted password credentials.
+    """
+    __tablename__ = "users"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    name = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    phone = Column(String(50), nullable=True)
+    password_hash = Column(String(255), nullable=False)
+    member_type = Column(String(50), default="Gold Member")
+    created_at = Column(DateTime, default=datetime.utcnow)
+

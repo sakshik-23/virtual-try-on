@@ -7,15 +7,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import engine, Base
-from .routers import catalog_router, tryon_router
-from .models import product, tryon_session  # Ensure models are loaded into Base metadata
+from .routers import catalog_router, tryon_router, auth_router
+from .models import product, tryon_session, user  # Ensure models are loaded into Base metadata
 
 # Auto-create all relational tables on startup (PostgreSQL or SQLite)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Spectra Optics AR & Eyewear API",
-    description="Backend microservice managing 3D eyewear specs, ACID checkout, and 6-DoF facial transformation matrix storage.",
+    description="Backend microservice managing 3D eyewear specs, ACID checkout, user authentication, and 6-DoF facial transformation matrix storage.",
     version="2.0.0"
 )
 
@@ -31,6 +31,7 @@ app.add_middleware(
 # Register API Routers
 app.include_router(catalog_router)
 app.include_router(tryon_router)
+app.include_router(auth_router)
 
 @app.get("/")
 def root():

@@ -15,8 +15,10 @@ import {
   LogOut,
   ArrowRight,
   UserPlus,
-  LogIn
+  LogIn,
+  Loader2
 } from 'lucide-react';
+import { authService } from '../services/authService';
 
 export function UserProfileModal({
   isOpen,
@@ -47,13 +49,14 @@ export function UserProfileModal({
 
   // Validation / Error state
   const [errorMsg, setErrorMsg] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const pdMm = faceMetrics?.measuredPdMm || 63.5;
   const faceWidthMm = faceMetrics?.measuredFaceWidthMm || 138;
   const recommendedSize = faceMetrics?.recommendedSize || 'Medium';
 
-  // Handle Sign In submission
-  const handleSignIn = (e) => {
+  // Handle Sign In submission to database API
+  const handleSignIn = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -66,37 +69,22 @@ export function UserProfileModal({
       return;
     }
 
-    const emailTrimmed = signInEmail.trim();
-    // Derive a clean display name if not pre-existing
-    const rawName = emailTrimmed.includes('@')
-      ? emailTrimmed.split('@')[0].replace(/[._]/g, ' ')
-      : emailTrimmed;
-    const formattedName = rawName
-      .split(' ')
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ') || 'Spectra Member';
-
-    const initials = formattedName
-      .split(' ')
-      .map(w => w[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() || 'SM';
-
-    const userObj = {
-      name: formattedName,
-      email: emailTrimmed.includes('@') ? emailTrimmed : `${emailTrimmed}@spectraoptics.com`,
-      phone: emailTrimmed.includes('@') ? '+91 98765 43210' : emailTrimmed,
-      memberType: 'Gold Member',
-      initials,
-      createdAt: new Date().toISOString()
-    };
-
-    if (onUpdateUser) onUpdateUser(userObj);
+    try {
+      setIsSubmitting(true);
+      const user = await authService.login({
+        email: signInEmail.trim(),
+        password: signInPassword
+      });
+      if (onUpdateUser) onUpdateUser(user);
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to sign in. Please verify your credentials.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Handle Registration submission
-  const handleRegister = (e) => {
+  // Handle Registration submission to database API
+  const handleRegister = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -113,24 +101,20 @@ export function UserProfileModal({
       return;
     }
 
-    const cleanName = registerName.trim();
-    const initials = cleanName
-      .split(' ')
-      .map(w => w[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() || 'SM';
-
-    const newUser = {
-      name: cleanName,
-      email: registerEmail.trim(),
-      phone: registerPhone.trim() || '+91 98765 43210',
-      memberType: 'Gold Member',
-      initials,
-      createdAt: new Date().toISOString()
-    };
-
-    if (onUpdateUser) onUpdateUser(newUser);
+    try {
+      setIsSubmitting(true);
+      const newUser = await authService.register({
+        name: registerName.trim(),
+        email: registerEmail.trim(),
+        password: registerPassword,
+        phone: registerPhone.trim() || null
+      });
+      if (onUpdateUser) onUpdateUser(newUser);
+    } catch (err) {
+      setErrorMsg(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Handle Sign Out
@@ -278,10 +262,20 @@ export function UserProfileModal({
 
                   <button
                     type="submit"
-                    className="w-full py-3 rounded-full bg-[#000042] text-white text-xs font-bold hover:bg-[#000028] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                    disabled={isSubmitting}
+                    className="w-full py-3 rounded-full bg-[#000042] text-white text-xs font-bold hover:bg-[#000028] disabled:opacity-70 transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
                   >
-                    <span>Sign In</span>
-                    <ArrowRight className="w-4 h-4" />
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-[#00bac6]" />
+                        <span>Signing In to Database...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Sign In</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
 
                   <p className="text-center text-xs text-slate-500 pt-1">
@@ -374,10 +368,20 @@ export function UserProfileModal({
 
                   <button
                     type="submit"
-                    className="w-full py-3 rounded-full bg-[#000042] text-white text-xs font-bold hover:bg-[#000028] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                    disabled={isSubmitting}
+                    className="w-full py-3 rounded-full bg-[#000042] text-white text-xs font-bold hover:bg-[#000028] disabled:opacity-70 transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
                   >
-                    <UserPlus className="w-4 h-4" />
-                    <span>Create Account & Register</span>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-[#00bac6]" />
+                        <span>Creating Account in Database...</span>
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4" />
+                        <span>Create Account & Register</span>
+                      </>
+                    )}
                   </button>
 
                   <p className="text-center text-xs text-slate-500 pt-1">
