@@ -4,14 +4,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Sparkles } from 'lucide-react';
 
 /**
- * Spectra Optics - Aesthetic 3D Hero Spectacles
- * Features the signature Minimalist Heritage Round Gold frame:
- * - High-definition front rim with polished gold metallic luster
- * - Dual-layer depth for authentic physical wire thickness
- * - Ergonomic 3D gold temple arms with dark tortoiseshell acetate ear tips
- * - Translucent silicone nose pads & sculpted bridge
- * - Ultra-clear optical lenses with subtle anti-reflective blue-light gloss
- * - Soft radial ambient floor shadow with zero clipping
+ * Spectra Optics - Authentic 3D Showroom Spectacles
+ * Features the signature Lumina Round Rose Gold / Gold Minimalist frame:
+ * - Natural optical transparency without any cloudy lens artifacts
+ * - Ergonomic 3D temple arms curving smoothly along the head
+ * - Realistic studio floor shadow with zero clipping
  */
 export function HeroThreeSpectacles() {
   const containerRef = useRef(null);
@@ -25,16 +22,16 @@ export function HeroThreeSpectacles() {
 
     setIsLoading(true);
     const width = container.clientWidth || 600;
-    const height = container.clientHeight || 480;
+    const height = container.clientHeight || 460;
 
-    // 1. Three.js Scene with Soft Studio Lighting
+    // 1. Three.js Scene with Pure Studio Lighting
     const scene = new THREE.Scene();
 
-    // 2. Camera setup - Positioned for natural optical showroom perspective (no clipping)
+    // 2. Perspective Camera with natural showroom viewing angle
     const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
     camera.position.set(0, 0.35, 4.2);
 
-    // 3. WebGL Renderer with High-End Tone Mapping & Transparent Canvas
+    // 3. WebGL Renderer with ACESFilmic Tone Mapping
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -43,54 +40,53 @@ export function HeroThreeSpectacles() {
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
-    // 4. Smooth 360° Orbital Controls with gentle auto-rotation
+    // 4. Free 360° Orbital Controls with gentle auto-rotation
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 1.8;
-    controls.maxDistance = 6.0;
-    controls.minDistance = 2.4;
-    controls.maxPolarAngle = Math.PI / 1.75;
+    controls.autoRotateSpeed = 2.0;
+    controls.maxDistance = 6.2;
+    controls.minDistance = 2.2;
+    controls.maxPolarAngle = Math.PI / 1.7;
     controls.minPolarAngle = Math.PI / 4;
     controls.target.set(0, 0, -0.65);
     controlsRef.current = controls;
 
-    // Stop auto-rotate immediately upon user drag
     controls.addEventListener('start', () => {
       controls.autoRotate = false;
     });
 
-    // 5. Studio Lighting Rig - Balanced to highlight gold reflections and glass clarity
+    // 5. Studio Lighting Rig
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.8);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.4);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
     keyLight.position.set(4, 5, 4);
     scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0xfefce8, 1.6);
+    const fillLight = new THREE.DirectionalLight(0xf8fafc, 1.5);
     fillLight.position.set(-4, 3, 3);
     scene.add(fillLight);
 
-    const topLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    const topLight = new THREE.DirectionalLight(0xffffff, 1.4);
     topLight.position.set(0, 6, 0);
     scene.add(topLight);
 
-    const rimLight = new THREE.DirectionalLight(0xd4af37, 1.2);
-    rimLight.position.set(0, 3, -4);
+    const rimLight = new THREE.DirectionalLight(0xfff7ed, 1.2);
+    rimLight.position.set(0, 4, -4);
     scene.add(rimLight);
 
-    // 6. Seamless Soft Studio Contact Shadow (Radial gradient smoothly fading to 0)
-    const shadowGeom = new THREE.PlaneGeometry(3.8, 2.4);
+    // 6. Soft Realistic Studio Radial Floor Contact Shadow
+    const shadowGeom = new THREE.PlaneGeometry(4.4, 2.8);
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
     const ctx = canvas.getContext('2d');
-    const grad = ctx.createRadialGradient(128, 128, 8, 128, 128, 110);
-    grad.addColorStop(0, 'rgba(15, 23, 42, 0.22)');
-    grad.addColorStop(0.35, 'rgba(15, 23, 42, 0.09)');
-    grad.addColorStop(0.7, 'rgba(15, 23, 42, 0.02)');
+    const grad = ctx.createRadialGradient(128, 128, 10, 128, 128, 120);
+    grad.addColorStop(0, 'rgba(15, 23, 42, 0.20)');
+    grad.addColorStop(0.35, 'rgba(15, 23, 42, 0.07)');
+    grad.addColorStop(0.7, 'rgba(15, 23, 42, 0.012)');
     grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 256, 256);
@@ -103,7 +99,7 @@ export function HeroThreeSpectacles() {
     });
     const shadowMesh = new THREE.Mesh(shadowGeom, shadowMat);
     shadowMesh.rotation.x = -Math.PI / 2;
-    shadowMesh.position.set(0, -0.78, -0.75);
+    shadowMesh.position.set(0, -0.75, -0.8);
     scene.add(shadowMesh);
 
     // 7. Spectacles 3D Assembly Group
@@ -111,43 +107,31 @@ export function HeroThreeSpectacles() {
     scene.add(glassesGroup);
     glassesGroupRef.current = glassesGroup;
 
-    // Load High-Definition Round Gold Texture
+    // Load Clean Front-Facing Round Gold Texture
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(
-      '/images/eyewear/exact_cutouts/exact_round_gold.png',
+      '/images/eyewear/front_round.png',
       (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace;
         texture.generateMipmaps = true;
         texture.minFilter = THREE.LinearMipmapLinearFilter;
         texture.magFilter = THREE.LinearFilter;
-        texture.colorSpace = THREE.SRGBColorSpace;
 
         const imgW = texture.image?.width || 900;
         const imgH = texture.image?.height || 360;
         const aspect = imgW / imgH;
 
-        // Proportioned frame height matching showroom aesthetics
         const frameHeight = 0.98;
         const frameWidth = frameHeight * aspect;
 
-        buildAestheticGoldRoundGlasses(glassesGroup, texture, frameWidth, frameHeight);
+        buildShowroomRound3DModel(glassesGroup, texture, frameWidth, frameHeight);
         setIsLoading(false);
       },
       undefined,
-      () => {
-        // Fallback to front_round_gold.png if exact cutout is not reachable
-        textureLoader.load(
-          '/images/eyewear/front_round_gold.png',
-          (fallbackTex) => {
-            fallbackTex.colorSpace = THREE.SRGBColorSpace;
-            buildAestheticGoldRoundGlasses(glassesGroup, fallbackTex, 2.65, 0.98);
-            setIsLoading(false);
-          },
-          undefined,
-          () => {
-            buildAestheticGoldRoundGlasses(glassesGroup, null, 2.65, 0.98);
-            setIsLoading(false);
-          }
-        );
+      (err) => {
+        console.warn('Fallback texture loading:', err);
+        buildShowroomRound3DModel(glassesGroup, null, 2.6, 0.98);
+        setIsLoading(false);
       }
     );
 
@@ -159,7 +143,7 @@ export function HeroThreeSpectacles() {
       animId = requestAnimationFrame(animate);
       const elapsed = clock.getElapsedTime();
 
-      // Gentle floating oscillation
+      // Subtle gentle floating oscillation
       if (glassesGroupRef.current) {
         glassesGroupRef.current.position.y = Math.sin(elapsed * 1.5) * 0.035;
       }
@@ -169,11 +153,11 @@ export function HeroThreeSpectacles() {
     };
     animate();
 
-    // 9. Responsive Resize Handler
+    // 9. Resize Listener
     const handleResize = () => {
       if (!container) return;
       const w = container.clientWidth || 600;
-      const h = container.clientHeight || 480;
+      const h = container.clientHeight || 460;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
@@ -196,7 +180,7 @@ export function HeroThreeSpectacles() {
       {/* 3D WebGL Canvas Viewport */}
       <div
         ref={containerRef}
-        className="w-full h-[400px] sm:h-[460px] lg:h-[480px] cursor-grab active:cursor-grabbing select-none"
+        className="w-full h-[380px] sm:h-[440px] lg:h-[460px] cursor-grab active:cursor-grabbing select-none"
       />
 
       {/* Loading Overlay */}
@@ -209,11 +193,11 @@ export function HeroThreeSpectacles() {
         </div>
       )}
 
-      {/* Minimalist Aesthetic Badge at bottom */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/60 shadow-sm pointer-events-none">
+      {/* Elegant Frame Tag */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-slate-200/80 shadow-sm pointer-events-none">
         <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-        <span className="text-[11px] font-semibold text-slate-600">
-          Heritage Round • Polished 24K Gold & Titanium
+        <span className="text-[11px] font-semibold text-slate-700">
+          Lumina Round • Polished Rose Gold & Titanium
         </span>
       </div>
     </div>
@@ -221,82 +205,37 @@ export function HeroThreeSpectacles() {
 }
 
 /**
- * Builds the Aesthetic Minimalist Round Gold 3D Spectacles:
- * 1. High-detail front wireframe plane with polished gold metalness
- * 2. 3D double-rim depth at Z = -0.015 for realistic physical wire presence
- * 3. 3D Gold temple arms with dark acetate ear tips traveling backward
- * 4. Translucent silicone nose pads mounted behind the bridge
- * 5. Optical grade lenses with refractive specular gloss
+ * Builds the authentic Showroom 3D Eyewear Model:
+ * 1. Front Frame: Textured with clean photography, dual-layer depth for realistic physical rim presence.
+ * 2. Natural Optical Clarity: PNG transparency is preserved without artificial rectangular lens planes.
+ * 3. Seamless 3D Temple Arms: Smooth CatmullRomCurve3 tubes connecting directly to outer hinges and curving over ears.
+ * 4. Translucent Silicone Nose Pads: Mounted behind the bridge.
  */
-function buildAestheticGoldRoundGlasses(group, texture, frameWidth, frameHeight) {
+function buildShowroomRound3DModel(group, texture, frameWidth, frameHeight) {
   while (group.children.length > 0) {
     const obj = group.children[0];
     group.remove(obj);
     if (obj.geometry) obj.geometry.dispose();
   }
 
-  const goldColorHex = '#d4af37';
+  const frameColorHex = '#b76e79'; // Elegant Rose Gold
 
-  // Front Frame Plane
-  const frontGeom = new THREE.PlaneGeometry(frameWidth, frameHeight);
-  const frontMat = new THREE.MeshStandardMaterial({
-    map: texture,
-    transparent: true,
-    alphaTest: 0.08,
-    depthWrite: true,
-    roughness: 0.22,
-    metalness: 0.85,
-    side: THREE.DoubleSide
-  });
-
-  // Layer 1: Front gold face
-  const frontMesh = new THREE.Mesh(frontGeom, frontMat);
-  group.add(frontMesh);
-
-  // Layer 2: Subtle depth backing
-  const backMesh = new THREE.Mesh(frontGeom, frontMat);
-  backMesh.position.set(0, 0, -0.015);
-  group.add(backMesh);
-
-  // 3D Optical Lenses (Crystal Clear with subtle blue-light reflection)
-  const lensWidth = frameWidth * 0.40;
-  const lensHeight = frameHeight * 0.86;
-  const lensGeom = new THREE.PlaneGeometry(lensWidth, lensHeight, 8, 8);
-  const lensMat = new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color(0xf0fdfa),
-    transparent: true,
-    opacity: 0.14,
-    roughness: 0.05,
-    metalness: 0.08,
-    transmission: 0.96,
-    ior: 1.52,
-    reflectivity: 0.95
-  });
-
-  const leftLens = new THREE.Mesh(lensGeom, lensMat);
-  leftLens.position.set(-frameWidth * 0.26, 0, -0.005);
-  group.add(leftLens);
-
-  const rightLens = new THREE.Mesh(lensGeom, lensMat);
-  rightLens.position.set(frameWidth * 0.26, 0, -0.005);
-  group.add(rightLens);
-
-  // 3D Gold Temples & Metal Materials
+  // Temple Materials
   const templeMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(goldColorHex),
-    metalness: 0.88,
-    roughness: 0.18
+    color: new THREE.Color(frameColorHex),
+    metalness: 0.85,
+    roughness: 0.2
   });
 
-  // Tortoiseshell / dark acetate ear tips
+  // Ear hook tips: tortoiseshell / dark acetate sleeve
   const earTipMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color('#381e11'),
-    metalness: 0.1,
+    metalness: 0.08,
     roughness: 0.35
   });
 
-  // Translucent silicone nose pads
-  const padMat = new THREE.MeshPhysicalMaterial({
+  // Translucent Silicone Nose Pads
+  const siliconePadMat = new THREE.MeshPhysicalMaterial({
     color: new THREE.Color(0xffffff),
     transparent: true,
     opacity: 0.85,
@@ -305,49 +244,82 @@ function buildAestheticGoldRoundGlasses(group, texture, frameWidth, frameHeight)
     ior: 1.45
   });
 
-  // Left & Right Temple Arms
-  const hingeX = frameWidth * 0.475;
+  // 1. FRONT FRAME MESH
+  const frontGeom = new THREE.PlaneGeometry(frameWidth, frameHeight);
+  const frontMat = new THREE.MeshStandardMaterial({
+    map: texture,
+    transparent: true,
+    alphaTest: 0.08,
+    depthWrite: true,
+    roughness: 0.28,
+    metalness: 0.75,
+    side: THREE.DoubleSide
+  });
+
+  // Layer 1: Front facing frame
+  const frontMesh = new THREE.Mesh(frontGeom, frontMat);
+  frontMesh.position.set(0, 0, 0);
+  group.add(frontMesh);
+
+  // Layer 2: Subtle depth backing at Z = -0.015 gives physical volumetric rim thickness
+  const backMesh = new THREE.Mesh(frontGeom, frontMat);
+  backMesh.position.set(0, 0, -0.015);
+  group.add(backMesh);
+
+  // 2. PHYSICAL 3D TEMPLE ARMS & HINGES (Smooth curved tubes tucked behind ears)
+  const hingeX = (frameWidth / 2) * 0.93;
   const hingeY = frameHeight * 0.08;
 
-  ['left', 'right'].forEach((side) => {
-    const isLeft = side === 'left';
-    const sign = isLeft ? -1 : 1;
+  const stemRadius = 0.016;
+  const hookRadius = 0.022;
 
-    // Hinge screw cylinder
-    const hingeGeom = new THREE.CylinderGeometry(0.022, 0.022, 0.07, 16);
-    const hinge = new THREE.Mesh(hingeGeom, templeMat);
-    hinge.position.set(sign * hingeX, hingeY, -0.02);
-    group.add(hinge);
+  for (let side of [-1, 1]) {
+    const x = side * hingeX;
 
-    // Slim wire temple shaft extending back along -Z
-    const shaftLength = 2.15;
-    const shaftGeom = new THREE.BoxGeometry(0.02, 0.035, shaftLength);
-    const shaft = new THREE.Mesh(shaftGeom, templeMat);
-    shaft.position.set(sign * (hingeX - 0.008), hingeY - 0.005, -shaftLength / 2);
-    group.add(shaft);
+    // Metallic Hinge Barrel
+    const hingeGeom = new THREE.CylinderGeometry(0.018, 0.018, 0.05, 12);
+    const hingeMesh = new THREE.Mesh(hingeGeom, templeMat);
+    hingeMesh.position.set(x, hingeY, -0.015);
+    group.add(hingeMesh);
 
-    // Contoured ergonomic ear hook
-    const hookLength = 0.54;
-    const hookGeom = new THREE.BoxGeometry(0.022, 0.038, hookLength);
-    const hook = new THREE.Mesh(hookGeom, earTipMat);
-    hook.position.set(sign * (hingeX - 0.008), hingeY - 0.14, -shaftLength - 0.17);
-    hook.rotation.x = 0.52;
-    group.add(hook);
-  });
+    // Part A: Front Temple Stem (traveling straight back along -Z to Z = -1.6)
+    const stemCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(x, hingeY, -0.02),
+      new THREE.Vector3(x * 0.94, hingeY, -0.8),
+      new THREE.Vector3(x * 0.88, hingeY - 0.01, -1.6)
+    ]);
+    const stemGeom = new THREE.TubeGeometry(stemCurve, 24, stemRadius, 10, false);
+    const stemMesh = new THREE.Mesh(stemGeom, templeMat);
+    group.add(stemMesh);
 
-  // Sculpted Gold Bridge
-  const bridgeGeom = new THREE.CylinderGeometry(0.018, 0.018, frameWidth * 0.16, 16);
-  const bridge = new THREE.Mesh(bridgeGeom, templeMat);
-  bridge.rotation.z = Math.PI / 2;
-  bridge.position.set(0, frameHeight * 0.12, -0.01);
-  group.add(bridge);
+    // Part B: Ergonomic Ear Hook (curving down to Z = -2.45)
+    const hookCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(x * 0.88, hingeY - 0.01, -1.6),
+      new THREE.Vector3(x * 0.85, hingeY - 0.08, -2.05),
+      new THREE.Vector3(x * 0.82, hingeY - 0.38, -2.45)
+    ]);
+    const hookGeom = new THREE.TubeGeometry(hookCurve, 20, hookRadius, 10, false);
+    const hookMesh = new THREE.Mesh(hookGeom, earTipMat);
+    group.add(hookMesh);
 
-  // Silicone Nose Pads behind bridge
-  [-1, 1].forEach((sign) => {
-    const padGeom = new THREE.BoxGeometry(0.035, 0.12, 0.06);
-    const pad = new THREE.Mesh(padGeom, padMat);
-    pad.position.set(sign * 0.18, -0.04, -0.08);
-    pad.rotation.y = sign * 0.35;
-    group.add(pad);
-  });
+    // Silicone Nose Pads behind bridge
+    const padX = side * 0.20;
+    const padY = -0.08;
+    const padZ = -0.06;
+
+    // Thin gooseneck post
+    const padArmGeom = new THREE.CylinderGeometry(0.009, 0.009, 0.11, 8);
+    const padArmMesh = new THREE.Mesh(padArmGeom, templeMat);
+    padArmMesh.position.set(padX, padY, padZ);
+    padArmMesh.rotation.z = side * 0.45;
+    padArmMesh.rotation.x = 0.25;
+    group.add(padArmMesh);
+
+    // Oval silicone cushion tucked behind the nasal bridge
+    const padGeom = new THREE.CapsuleGeometry(0.03, 0.06, 8, 12);
+    const padMesh = new THREE.Mesh(padGeom, siliconePadMat);
+    padMesh.position.set(padX + side * 0.015, padY - 0.04, padZ - 0.02);
+    padMesh.rotation.z = side * 0.35;
+    group.add(padMesh);
+  }
 }
