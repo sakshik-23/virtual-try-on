@@ -193,13 +193,6 @@ export function HeroThreeSpectacles() {
         </div>
       )}
 
-      {/* Elegant Frame Tag */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-slate-200/80 shadow-sm pointer-events-none">
-        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-        <span className="text-[11px] font-semibold text-slate-700">
-          Lumina Round • Polished Rose Gold & Titanium
-        </span>
-      </div>
     </div>
   );
 }
