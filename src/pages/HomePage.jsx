@@ -5,6 +5,7 @@ import {
   Glasses, 
   Camera, 
   Rotate3d, 
+  ShoppingBag,
   ArrowRight
 } from 'lucide-react';
 import { HeroThreeSpectacles } from '../components/HeroThreeSpectacles';
