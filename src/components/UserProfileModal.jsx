@@ -133,20 +133,6 @@ export function UserProfileModal({
     if (onUpdateUser) onUpdateUser(newUser);
   };
 
-  // Quick 1-Click Demo Login
-  const handleDemoLogin = (name = 'Sakshi Kokare', email = 'sakshi.kokare@spectraoptics.com') => {
-    setErrorMsg('');
-    const demoUser = {
-      name,
-      email,
-      phone: '+91 98230 11420',
-      memberType: 'Gold Member',
-      initials: 'SK',
-      createdAt: new Date().toISOString()
-    };
-    if (onUpdateUser) onUpdateUser(demoUser);
-  };
-
   // Handle Sign Out
   const handleSignOut = () => {
     if (onUpdateUser) onUpdateUser(null);
@@ -268,7 +254,7 @@ export function UserProfileModal({
                         type="text"
                         value={signInEmail}
                         onChange={(e) => setSignInEmail(e.target.value)}
-                        placeholder="e.g. sakshi.kokare@spectraoptics.com"
+                        placeholder="enter your email or mobile number"
                         className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#000042] focus:ring-2 focus:ring-[#000042]/10 transition-all"
                       />
                     </div>
@@ -296,24 +282,6 @@ export function UserProfileModal({
                   >
                     <span>Sign In</span>
                     <ArrowRight className="w-4 h-4" />
-                  </button>
-
-                  <div className="relative flex py-2 items-center">
-                    <div className="flex-grow border-t border-slate-200"></div>
-                    <span className="flex-shrink mx-3 text-[11px] text-slate-400 uppercase font-bold tracking-wider">
-                      Or Quick Demo
-                    </span>
-                    <div className="flex-grow border-t border-slate-200"></div>
-                  </div>
-
-                  {/* 1-Click Demo Login */}
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin('Sakshi Kokare', 'sakshi.kokare@spectraoptics.com')}
-                    className="w-full py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-200/60"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                    <span>1-Click Demo Login as Sakshi Kokare (Gold Member)</span>
                   </button>
 
                   <p className="text-center text-xs text-slate-500 pt-1">
@@ -592,8 +560,8 @@ export function UserProfileModal({
         </div>
 
         {/* ================= MODAL FOOTER ================= */}
-        <div className="p-4 border-t border-slate-100 bg-white flex items-center justify-between">
-          {currentUser ? (
+        <div className={`p-4 border-t border-slate-100 bg-white flex items-center ${currentUser ? 'justify-between' : 'justify-end'}`}>
+          {currentUser && (
             <button
               onClick={handleSignOut}
               className="px-4 py-2 rounded-full border border-slate-200 hover:border-rose-300 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
@@ -601,10 +569,6 @@ export function UserProfileModal({
               <LogOut className="w-3.5 h-3.5" />
               <span>Sign Out / Switch User</span>
             </button>
-          ) : (
-            <div className="text-[11px] text-slate-400">
-              Secure 256-bit Biometric & ACID Data Storage
-            </div>
           )}
 
           <button
