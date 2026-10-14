@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { ProductCatalog } from './components/ProductCatalog';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { TryOnPage } from './pages/TryOnPage';
+import { HomePage } from './pages/HomePage';
 import { ThreeSixtyModal } from './components/ThreeSixtyModal';
 import { StyleQuizModal } from './components/StyleQuizModal';
 import { CartDrawer } from './components/CartDrawer';
@@ -211,24 +212,16 @@ export default function App() {
       {/* 2. Main Content Managed by React Router */}
       <main className="flex-1 w-full">
         <Routes>
-          {/* Eyeglasses Route (Home) */}
+          {/* Home Landing Page Route */}
           <Route
             path="/"
             element={
-              <ProductCatalog
-                category="eyeglasses"
+              <HomePage
                 catalogProducts={catalogProducts}
-                backendLive={backendLive}
-                onSelectProduct={(p) => navigate(`/product/${p.id}`)}
-                onOpen360={handleOpen360}
                 onOpenLiveTryOn={handleOpenLiveTryOn}
+                onOpen360={handleOpen360}
+                onOpenStyleQuiz={() => setIsStyleQuizOpen(true)}
                 onAddToCart={handleAddToCart}
-                userSelfie={userSelfie}
-                faceMetrics={faceMetrics}
-                is3DTryOnActive={is3DTryOnActive}
-                onToggle3DTryOn={() => setIs3DTryOnActive(!is3DTryOnActive)}
-                wishlistItems={wishlistItems}
-                onToggleWishlist={handleToggleWishlist}
               />
             }
           />

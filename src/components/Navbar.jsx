@@ -34,6 +34,17 @@ export function Navbar({
           <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-700">
             <NavLink
               to="/"
+              end
+              className={({ isActive }) =>
+                `hover:text-slate-900 transition-colors py-1 ${
+                  isActive ? 'text-slate-900 font-bold border-b-2 border-[#000042]' : ''
+                }`
+              }
+            >
+              Home
+            </NavLink>
+            <NavLink
+              to="/eyeglasses"
               className={({ isActive }) =>
                 `hover:text-slate-900 transition-colors py-1 ${
                   isActive ? 'text-slate-900 font-bold border-b-2 border-[#000042]' : ''
