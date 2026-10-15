@@ -15,12 +15,38 @@ export function HomePage({
   onOpenLiveTryOn,
   onOpen360,
   onOpenStyleQuiz,
-  onAddToCart
+  onAddToCart,
+  userSelfie = null,
+  faceMetrics = null,
+  is3DTryOnActive = false
 }) {
   const navigate = useNavigate();
 
   // Curate popular top frames for the preview section
   const previewProducts = catalogProducts.slice(0, 4);
+
+  // Exact 3D Facial Measurement Fitting based on Eye Distance (IPD)
+  const getGlassesFittingStyle = (product) => {
+    const posX = faceMetrics?.noseBridge?.x != null ? faceMetrics.noseBridge.x * 100 : 50.0;
+    const posY = faceMetrics?.noseBridge?.y != null ? faceMetrics.noseBridge.y * 100 : 49.0;
+    let rawTilt = faceMetrics?.tiltDeg || 0;
+    if (Math.abs(rawTilt) > 15) rawTilt = 0;
+    const tilt = Math.max(-8, Math.min(8, rawTilt));
+    let baseWidthPercent;
+    if (faceMetrics?.ipdRatio && faceMetrics.ipdRatio > 0.08 && faceMetrics.ipdRatio < 0.5) {
+      const frameMm = product.dimensions?.frameWidth || 138;
+      baseWidthPercent = Math.min(50.0, Math.max(34.0, faceMetrics.ipdRatio * (frameMm / 63.0) * 105));
+    } else {
+      baseWidthPercent = 38.0;
+    }
+    return {
+      left: `${posX}%`,
+      top: `${posY}%`,
+      width: `${baseWidthPercent}%`,
+      transform: `translate(-50%, -50%) rotate(${tilt}deg)`,
+      transformOrigin: 'center center'
+    };
+  };
 
   return (
     <div className="w-full bg-white text-slate-900 overflow-hidden">
@@ -194,27 +220,54 @@ export function HomePage({
               key={product.id}
               className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all flex flex-col group"
             >
-              {/* Product Image */}
-              <div className="relative h-48 bg-slate-50 flex items-center justify-center p-4 overflow-hidden">
-                <img
-                  src={product.frontImage || product.image}
-                  alt={product.name}
-                  className="max-h-full max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-
-                <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#000042] text-white">
-                  {product.shape}
-                </span>
-
-                {/* Quick 360 Overlay Button */}
-                <button
-                  onClick={() => onOpen360 ? onOpen360(product) : null}
-                  className="absolute bottom-3 right-3 p-2 rounded-full bg-white/95 hover:bg-white text-slate-700 shadow-md border border-slate-200 transition-all hover:scale-110 cursor-pointer"
-                  title="Open 360° 3D Viewer"
+              {/* Product Image / Selfie Try-On Overlay */}
+              {is3DTryOnActive && userSelfie ? (
+                <div
+                  className="relative h-48 w-full cursor-pointer bg-slate-900 overflow-hidden"
+                  onClick={() => onOpenLiveTryOn ? onOpenLiveTryOn(product) : null}
                 >
-                  <Rotate3d className="w-4 h-4 text-[#000042]" />
-                </button>
-              </div>
+                  <img
+                    src={userSelfie}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div
+                    className="absolute pointer-events-none transition-all duration-150"
+                    style={getGlassesFittingStyle(product)}
+                  >
+                    <img
+                      src={product.frontImage || product.image}
+                      alt={product.name}
+                      className="w-full object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)] transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-bold text-white flex items-center gap-1 border border-white/10">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Virtual Fit</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative h-48 bg-slate-50 flex items-center justify-center p-4 overflow-hidden">
+                  <img
+                    src={product.frontImage || product.image}
+                    alt={product.name}
+                    className="max-h-full max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-300"
+                  />
+
+                  <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#000042] text-white">
+                    {product.shape}
+                  </span>
+
+                  {/* Quick 360 Overlay Button */}
+                  <button
+                    onClick={() => onOpen360 ? onOpen360(product) : null}
+                    className="absolute bottom-3 right-3 p-2 rounded-full bg-white/95 hover:bg-white text-slate-700 shadow-md border border-slate-200 transition-all hover:scale-110 cursor-pointer"
+                    title="Open 360° 3D Viewer"
+                  >
+                    <Rotate3d className="w-4 h-4 text-[#000042]" />
+                  </button>
+                </div>
+              )}
 
               {/* Product Info */}
               <div className="p-4 flex-1 flex flex-col justify-between">

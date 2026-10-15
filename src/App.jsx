@@ -270,6 +270,9 @@ export default function App() {
                 onOpen360={handleOpen360}
                 onOpenStyleQuiz={() => setIsStyleQuizOpen(true)}
                 onAddToCart={handleAddToCart}
+                userSelfie={userSelfie}
+                faceMetrics={faceMetrics}
+                is3DTryOnActive={is3DTryOnActive}
               />
             }
           />
@@ -334,7 +337,7 @@ export default function App() {
                 onOpenStyleQuiz={() => setIsStyleQuizOpen(true)}
                 onGoToDittoGrid={() => {
                   setIs3DTryOnActive(true);
-                  navigate('/');
+                  navigate('/eyeglasses');
                 }}
               />
             }
@@ -356,7 +359,7 @@ export default function App() {
                 onOpenStyleQuiz={() => setIsStyleQuizOpen(true)}
                 onGoToDittoGrid={() => {
                   setIs3DTryOnActive(true);
-                  navigate('/');
+                  navigate('/eyeglasses');
                 }}
               />
             }
