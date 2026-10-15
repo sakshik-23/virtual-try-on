@@ -241,7 +241,7 @@ export default function App() {
     try {
       localStorage.removeItem('spectra_user_selfie');
       localStorage.removeItem('spectra_face_metrics');
-    } catch (e) {}
+    } catch (e) { }
   };
 
   return (
@@ -384,8 +384,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 font-medium">
             <span className="font-bold text-slate-800">SPECTRA OPTICS 3D VIRTUAL STUDIO</span>
-            <span>•</span>
-            <span>Real-Time WebGL & MediaPipe Engine</span>
+
           </div>
 
           <div className="text-slate-400">

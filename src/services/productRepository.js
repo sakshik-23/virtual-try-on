@@ -96,7 +96,7 @@ export class ProductRepository {
 
 export class TryOnSessionRepository {
   constructor(apiBaseUrl = DEFAULT_API_URL) {
-    this.apiBaseUrl = apiBaseUrl;
+    this.apiBaseUrl = (apiBaseUrl || '').replace(/\/+$/, '');
   }
 
   /**
