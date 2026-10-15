@@ -6,7 +6,7 @@ High-performance REST API service for Virtual Try-On, 3D Eyewear, and Biometric 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import engine, Base
+from .database import engine, Base, SessionLocal
 from .routers import catalog_router, tryon_router, auth_router
 from .models import product, tryon_session, user  # Ensure models are loaded into Base metadata
 
@@ -32,6 +32,26 @@ app.add_middleware(
 app.include_router(catalog_router)
 app.include_router(tryon_router)
 app.include_router(auth_router)
+
+@app.on_event("startup")
+def auto_seed_products():
+    """Auto-populate catalog on startup if database is empty."""
+    db = SessionLocal()
+    try:
+        from .models.product import Product
+        if db.query(Product).count() == 0:
+            try:
+                from ..seed_data import PRODUCTS_SEED
+            except Exception:
+                from seed_data import PRODUCTS_SEED
+            for item in PRODUCTS_SEED:
+                db.add(Product(**item))
+            db.commit()
+            print("[Startup] Auto-seeded default eyewear products into database.")
+    except Exception as e:
+        print("[Startup] Auto-seed check notice:", e)
+    finally:
+        db.close()
 
 @app.get("/")
 def root():
